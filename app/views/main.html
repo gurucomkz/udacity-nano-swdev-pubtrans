@@ -1,23 +1,93 @@
-<div class="jumbotron">
-  <h1>'Allo, 'Allo!</h1>
-  <p class="lead">
-    <img src="images/yeoman.png" alt="I'm Yeoman"><br>
-    Always a pleasure scaffolding your apps.
-  </p>
-  <p><a class="btn btn-lg btn-success" ng-href="#/">Splendid!<span class="glyphicon glyphicon-ok"></span></a></p>
-</div>
+<div layout="column">
+    <md-whiteframe ng-if="!allOperators" class="md-whiteframe-1dp" layout="column" layout-padding layout-align="center center">
+        <md-progress-circular md-diameter="96"></md-progress-circular>
+        <div>
+            Fetching operators...
+        </div>
+    </md-whiteframe>
+    <md-whiteframe ng-if="allOperators" class="md-whiteframe-1dp" layout="column" layout-padding>
+        <form>
 
-<div class="row marketing">
-  <h4>HTML5 Boilerplate</h4>
-  <p>
-    HTML5 Boilerplate is a professional front-end template for building fast, robust, and adaptable web apps or sites.
-  </p>
+            <label>Operator</label>
+            <md-autocomplete
+                md-no-cache="true"
+                md-selected-item="operator"
+                md-search-text="operatorSearchText"
+                md-selected-item-change="operatorChange(operator)"
+                md-autoselect="true"
+                md-items="operator in filterOperators(operatorSearchText)"
+                md-item-text="operator.Name"
+                md-min-length="0"
+                md-require-match="true"
+                placeholder="Pick Operator">
+                <md-item-template>
+                    <span md-highlight-text="operatorSearchText">{{operator.Name}} (#{{operator.Id}})</span>
+                </md-item-template>
+                <md-not-found>
+                  No operators matching "{{operatorSearchText}}" were found.
+                </md-not-found>
+            </md-autocomplete>
 
-  <h4>Angular</h4>
-  <p>
-    AngularJS is a toolset for building the framework most suited to your application development.
-  </p>
 
-  <h4>Karma</h4>
-  <p>Spectacular Test Runner for JavaScript.</p>
+
+                <div class="container" ng-if="operator && !allStations">
+                    <br />
+                    <md-progress-linear mode="indeterminate"></md-progress-linear>
+                    <div class="bottom-block">
+                        <span>Loading operator's stations...</span>
+                    </div>
+                </div>
+
+            <div ng-if="operator && allStations">
+                <br />
+                <label>Origin</label>
+                <md-autocomplete
+        			required
+        			flex
+                    md-no-cache="true"
+        			md-input-name="travelStart"
+        			md-selected-item="travelStart"
+        			md-search-text="stationSearchTextStart"
+        			md-selected-item-change="stationChange(travelStart,'start')"
+                    md-autoselect="true"
+        			md-items="station in stationQuerySearch(stationSearchTextStart, 'start')"
+        			md-item-text="station.Name"
+        			md-min-length="0"
+                    md-require-match="true"
+        			placeholder="Travel start">
+        			<md-item-template>
+        				<span md-highlight-text="stationSearchTextStart">{{station.Name}} (#{{station.id}})</span>
+        			</md-item-template>
+                    <md-not-found>
+                      No stations matching "{{stationSearchTextStart}}" were found.
+                    </md-not-found>
+              	</md-autocomplete>
+
+                <br />
+                <label>Destination</label>
+                <md-autocomplete
+        			required
+        			flex
+                    md-no-cache="true"
+        			md-input-name="travelEnd"
+        			md-selected-item="travelEnd"
+        			md-search-text="stationSearchTextEnd"
+        			md-selected-item-change="stationChange(travelEnd,'stop')"
+                    md-autoselect="true"
+        			md-items="station in stationQuerySearch(stationSearchTextEnd, 'stop')"
+        			md-item-text="station.Name"
+        			md-min-length="0"
+                    md-require-match="true"
+        			placeholder="Travel end">
+        			<md-item-template>
+        				<span md-highlight-text="stationSearchTextEnd">{{station.Name}} (#{{station.id}})</span>
+        			</md-item-template>
+                    <md-not-found>
+                      No stations matching "{{stationSearchTextEnd}}" were found.
+                    </md-not-found>
+              	</md-autocomplete>
+            </div>
+        </form>
+    </md-whiteframe>
+
 </div>
