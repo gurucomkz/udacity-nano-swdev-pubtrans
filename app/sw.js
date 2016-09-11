@@ -41,6 +41,21 @@
 		});
 	}
 
+	function serveSkin(request) {
+		var storageUrl = request.url;
+
+		return caches.open(skinCacheName).then(function(cache) {
+			var rq = fetch(request).then(function(networkResponse) {
+				cache.put(storageUrl, networkResponse.clone());
+				return networkResponse;
+			});
+
+			return cache.match(storageUrl).then(function(response) {
+				 return response || rq;
+			});
+		});
+	}
+
 	self.addEventListener('install', function(event) {
 		event.waitUntil(
 			regCaches()
@@ -65,21 +80,35 @@
 
 	self.addEventListener('fetch', function(event) {
 		var requestUrl = new URL(event.request.url);
-		console.log(requestUrl.origin);
+
+		if (requestUrl.origin === 'http://localhost:9001') {
+			event.respondWith(serveApi(event.request));
+			return;
+		}
 
 		if (requestUrl.origin === 'https://api.511.org') {
-			if (requestUrl.pathname.startsWith('/transit/operators')) {
+			if (requestUrl.pathname.startsWith('/transit/operators')
+				||requestUrl.pathname.startsWith('/transit/stops')
+				||requestUrl.pathname.startsWith('/transit/lines')
+				||requestUrl.pathname.startsWith('/transit/timetable')
+			) {
 				event.respondWith(serveApi(event.request));
 				return;
 			}
-			// if (requestUrl.pathname.startsWith('/avatars/')) {
-			// 	event.respondWith(serveAvatar(event.request));
-			// 	return;
-			// }
-			// TODO: respond to avatar urls by responding with
-			// the return value of serveAvatar(event.request)
 		}
 
+		if (requestUrl.origin === location.origin) {
+			//skin is retrieved from cache but still looks for updates, just in case
+			if (
+				//requestUrl.pathname.startsWith('/views/') ||
+				requestUrl.pathname.startsWith('/styles/') ||
+				requestUrl.pathname.startsWith('/bower_components/')
+			)
+			{
+				event.respondWith(serveSkin(event.request));
+				return;
+			}
+		}
 		event.respondWith(
 			caches.match(event.request).then(function(response) {
 				return response || fetch(event.request);
