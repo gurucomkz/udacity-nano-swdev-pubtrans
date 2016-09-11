@@ -1,0 +1,8 @@
+fare_id,price,currency_type,payment_method,transfers,transfer_duration
+178999,6.00,USD,1,0,
+179000,6.00,USD,1,0,
+179001,6.00,USD,1,0,
+179002,2.00,USD,1,0,
+179003,2.00,USD,1,0,
+179004,2.00,USD,1,0,
+179005,6.00,USD,1,0,

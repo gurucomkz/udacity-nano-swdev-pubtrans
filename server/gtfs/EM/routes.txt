@@ -1,0 +1,5 @@
+route_id,agency_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+SOUTH HOLLIS,EM,,SOUTH HOLLIS,3,,
+HOLLIS,EM,HOLLIS,,3,,
+POWELL,EM,POWELL,,3,,
+WATERGATE,EM,,WATERGATE,3,,

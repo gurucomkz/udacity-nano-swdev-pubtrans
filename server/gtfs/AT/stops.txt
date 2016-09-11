@@ -1,0 +1,3 @@
+stop_id,stop_name,stop_lat,stop_lon,zone_id
+12175078,ANGEL ISLAND,37.868783,-122.435236,
+12175080,TIBURON,37.87264,-122.455744,

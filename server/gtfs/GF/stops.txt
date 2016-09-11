@@ -1,0 +1,4 @@
+stop_id,stop_name,stop_lat,stop_lon,zone_id
+43004,Larkspur Ferry Terminal,37.945316,-122.508736,55617
+43000,San Franciso Ferry Terminal,37.796169,-122.391617,55615
+43003,Sausalito Ferry Terminal,37.856403,-122.478249,55616

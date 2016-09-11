@@ -1,0 +1,3 @@
+stop_id,stop_name,stop_lat,stop_lon,zone_id
+12175092,Alcatraz,37.82678,-122.421068,
+12175093,Pier 33,37.807055,-122.404156,

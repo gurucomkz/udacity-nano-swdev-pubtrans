@@ -1,0 +1,4 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+73047,1,1,1,1,1,0,0,20141223,20161223
+73048,0,0,0,0,0,1,0,20141223,20161223
+73049,0,0,0,0,0,0,1,20141223,20161223

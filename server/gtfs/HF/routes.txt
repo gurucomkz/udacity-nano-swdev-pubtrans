@@ -1,0 +1,4 @@
+route_id,agency_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+Night Tour Ferry,HF,Night Tour Ferry,Alcatraz Hornblower,4,,
+Day Tour Ferry,HF,Day Tour Ferry,Alcatraz Hornblower,4,,
+Early Bird Ferry,HF,Early Bird Ferry,Alcatraz Hornblower,4,,

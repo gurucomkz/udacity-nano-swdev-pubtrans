@@ -1,0 +1,7 @@
+route_id,agency_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+200 Bus,SB,,200 Bus,3,,
+Harbor Bay Ferry,SB,,Harbor Bay Ferry,4,,
+Alameda/Oak Ferry,SB,,Alameda/Oak Ferry,4,,
+Vallejo Ferry,SB,,Vallejo Ferry,4,,
+South SF Ferry,SB,,South SF Ferry,4,,
+Ala/South SF Ferry,SB,,Ala/South SF Ferry,4,,

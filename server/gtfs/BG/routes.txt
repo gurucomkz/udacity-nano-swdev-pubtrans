@@ -1,0 +1,4 @@
+route_id,agency_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+SAUSALITO FERRY,BG,,SAUSALITO FERRY,4,,
+TIBURON FERRY,BG,,TIBURON FERRY,4,,
+ANGEL ISLAND FERRY,BG,,ANGEL ISLAND FERRY,4,,

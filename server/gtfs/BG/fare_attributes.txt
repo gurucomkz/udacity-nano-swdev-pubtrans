@@ -1,0 +1,4 @@
+fare_id,price,currency_type,payment_method,transfers,transfer_duration
+178791,9.00,USD,1,0,
+178792,11.50,USD,1,0,
+178793,11.50,USD,1,0,

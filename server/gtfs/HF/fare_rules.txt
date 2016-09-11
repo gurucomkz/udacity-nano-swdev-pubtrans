@@ -1,0 +1,4 @@
+fare_id,route_id
+175378,Day Tour Ferry
+175379,Night Tour Ferry
+175380,Early Bird Ferry

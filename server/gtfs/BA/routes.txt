@@ -1,0 +1,13 @@
+route_id,agency_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+DALY/FREMONT,BA,DALY/FREMONT,Fremont,2,,
+COLS/OAKL,BA,,COLS/OAKL,2,,
+BAY PT/SFIA,BA,BAY PT/SFIA,SF Airport,2,,
+DALY/DUBLIN,BA,DALY/DUBLIN,Dublin Pleasanton,2,,
+RICH/MILL,BA,RICH/MILL,Millbrae,2,,
+OAKL/COLS,BA,,OAKL/COLS,2,,
+DUBLIN/DALY,BA,DUBLIN/DALY,Daly City,2,,
+FREMONT/DALY,BA,FREMONT/DALY,Daly City,2,,
+FREMONT/RICH,BA,FREMONT/RICH,Richmond,2,,
+MILL/RICH,BA,MILL/RICH,Richmond,2,,
+RICH/FREMONT,BA,RICH/FREMONT,Fremont,2,,
+SFIA/BAY PT,BA,SFIA/BAY PT,Pittsburg Bay Point,2,,
