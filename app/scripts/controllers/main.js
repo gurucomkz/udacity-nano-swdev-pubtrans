@@ -10,18 +10,23 @@ angular.module('pubTransApp')
     '$scope',
     '$http',
     'AppSettings',
-function ($scope, $http, AppSettings) {
+    '$q',
+    'GtfsUtils',
+    '$timeout',
+function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout) {
     'use strict';
-
-    var apiKey = '4bad51fb-4b43-4464-9f5e-e69576651176';
 
     $scope.operator = AppSettings.val('lastOperator');
 
     $scope.allStations = null;
     $scope.allOperators = null;
+    $scope.allLines = null;
     $scope.travelLine = AppSettings.val('lastLine');
     $scope.travelStart = AppSettings.val('lastStart');
     $scope.travelEnd = AppSettings.val('lastStop');
+
+    $scope.travelStartTT = null;
+    $scope.travelEndTT = null;
 
 
     $scope.stationsReady = function() {
@@ -39,9 +44,8 @@ function ($scope, $http, AppSettings) {
     };
 
     $scope.operatorChange = function(newOperator) {
-        console.log(['new operator', newOperator]);
         $scope.operator = newOperator;
-    }
+    };
 
     $scope.stationSearchTextStart = '';
     $scope.stationSearchTextEnd = '';
@@ -52,8 +56,10 @@ function ($scope, $http, AppSettings) {
         query = (query||'').toLowerCase();
         return $scope.allStations
                     .filter(function(candidate){
-                        return candidate && candidate.Name && candidate.id != (ignore || {id:null}).id &&
-                            candidate.Name.toLowerCase().indexOf(query)>=0;
+                        return candidate && candidate.name && candidate.id !== (ignore || {id:null}).id &&
+                            (candidate.name.toLowerCase().indexOf(query)>=0 ||
+                            (''+candidate.id).indexOf(query)>=0
+                            );
                     });
     };
 
@@ -66,9 +72,6 @@ function ($scope, $http, AppSettings) {
                     });
     };
 
-
-    //timetable
-    //https://api.511.org/transit/timetable?api_key={yourkey}&operator_id=BART&line_id=COLS/OAKL
     //stop timetable
     //https://api.511.org/transit/stoptimetable?format=json&OperatorRef=SFMTA&MonitoringRef=13008&api_key=4bad51fb-4b43-4464-9f5e-e69576651176
 
@@ -76,28 +79,44 @@ function ($scope, $http, AppSettings) {
         if(!$scope.operator || !$scope.operator.Id){
             return;
         }
-        $http.get('https://api.511.org/transit/stops?format=json&operator_id='+$scope.operator.Id+'&api_key='+apiKey)
+        GtfsUtils.fetchOperatorStops($scope.operator.Id)
             .then(function(response){
-                var pre = response.data.Contents.dataObjects.ScheduledStopPoint;
-
-                var ids = [];
-                $scope.allStations = pre.filter(function(station){
-                    if(ids.indexOf(station.id) >= 0){
-                        return false;
-                    }
-                    ids.push(station.id);
-                    return true;
-                });
+                $scope.allStations = response;
+                $scope.fetchTimetables();
             });
     };
 
-    $scope.fetchOperators = function () {
-        $http.get('https://api.511.org/transit/operators?format=json&api_key='+apiKey)
+    $scope.fetchOperatorLines = function() {
+        if(!$scope.operator || !$scope.operator.Id){
+            return;
+        }
+        GtfsUtils.fetchOperatorLines($scope.operator.Id)
             .then(function(response){
-                $scope.allOperators = response.data.filter(function(oper){
-                    return oper && oper.Id && (oper.Monitored || oper.Montiored);
-                });
+                $scope.allLines = response;
+                $scope.fetchTimetables();
             });
+    };
+
+    $scope.fetchTimetables = function () {
+        if(!$scope.operator || !$scope.operator.Id){
+            return;
+        }
+        GtfsUtils.fetchOperators($scope.operator.Id)
+        .then(function(times){
+            $scope.allTimes = times;
+        });
+    };
+
+    $scope.fetchOperators = function() {
+        GtfsUtils.fetchOperators()
+        .then(function(operators){
+            $scope.allOperators = operators;
+        })
+        .catch(function(){
+            $timeout(function(){
+                $scope.fetchOperators();
+            },5000);
+        });
     };
 
     $scope.fetchOperators();
@@ -105,18 +124,46 @@ function ($scope, $http, AppSettings) {
     //  watchers  //
     ////////////////
 
-    $scope.$watch('operator', function(newVal, oldVal){
-        AppSettings.val('lastOperator', newVal);
+    $scope.$watch('operator', function(newVal){
         $scope.allStations = null;
+        $scope.allLines = null;
+        if(!newVal){
+            return;
+        }
+        AppSettings.val('lastOperator', newVal);
         $scope.fetchOperatorStops();
+        $scope.fetchOperatorLines();
+        $scope.fetchTimetables();
     });
-    $scope.$watch('travelLine', function(newVal, oldVal){
+    $scope.$watch('travelLine', function(newVal){
         AppSettings.val('lastLine', newVal);
     });
-    $scope.$watch('travelStart', function(newVal, oldVal){
+    $scope.$watch('travelStart', function(newVal){
+        if(!newVal){
+            return;
+        }
         AppSettings.val('lastStart', newVal);
+        // $scope.fetchTimetables(newVal.id)
+        // .then(function(data) {
+        //     console.log(['travelStart TT',data]);
+        //     try{
+        //         data = data.Siri.ServiceDelivery.TimetableStopVisit;
+        //     }catch(e){}
+        //     $scope.travelStartTT = data;
+        // })
     });
-    $scope.$watch('travelEnd', function(newVal, oldVal){
+    $scope.$watch('travelEnd', function(newVal){
+        if(!newVal){
+            return;
+        }
         AppSettings.val('lastStop', newVal);
+        $scope.fetchTimetable(newVal.id)
+        .then(function(data) {
+            console.log(['travelEnd TT',data]);
+            try{
+                data = data.Siri.ServiceDelivery.TimetableStopVisit;
+            }catch(e){}
+            $scope.travelEndTT = data;
+        });
     });
 }]);
