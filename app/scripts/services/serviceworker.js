@@ -11,13 +11,15 @@ angular.module('pubTransApp')
 function ($mdToast) {
     'use strict';
 
+    this.init = function(){};
+
     if (!navigator.serviceWorker) {
-        console.log("Navigator dows not support serviceWorker");
+        console.log('Navigator dows not support serviceWorker');
         return;
     }
 
     var toast = $mdToast.simple()
-        .textContent("New version available")
+        .textContent('New version available')
         .action('REFRESH')
         .highlightAction(true)
         .position('bottom');
@@ -59,7 +61,7 @@ function ($mdToast) {
     });
 
     // Ensure refresh is only called once.
-    // This works around a bug in "force update on reload".
+    // This works around a bug in 'force update on reload'.
     var refreshing;
     navigator.serviceWorker.addEventListener('controllerchange', function() {
         if (!refreshing) {

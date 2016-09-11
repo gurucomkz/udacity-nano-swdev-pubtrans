@@ -5,7 +5,7 @@ port = process.env.PORT || 4000;
 var options = {
   dotfiles: 'ignore',
   etag: true,
-  extensions: ['htm', 'html', 'json'],
+  extensions: ['htm', 'html', 'json', 'txt'],
   index: false,
   maxAge: '1d',
   redirect: false,

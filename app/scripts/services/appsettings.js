@@ -24,11 +24,11 @@ angular.module('pubTransApp')
 .factory('AppSettings', [
 
 function() {
-
+    'use strict';
     var me,
-		_settingsKey = "pubtransSettings",
+		_settingsKey = 'pubtransSettings',
         defaultSettings = {
-            'lastOperator':'SFMTA',
+            'lastOperator':null,
             'lastLine':null,
             'lastStart':null,
             'lastStop':null
@@ -36,8 +36,9 @@ function() {
 
     function _retrieveSettings() {
         var settings = localStorage[_settingsKey];
-        if(settings)
+        if(settings){
             return angular.fromJson(settings);
+        }
         return defaultSettings;
     }
 
@@ -45,29 +46,26 @@ function() {
         localStorage[_settingsKey] = angular.toJson(settings);
     }
 
-    return me = {
+    return (me = {
         instance: function(){
 			var _tmp = _retrieveSettings();
 			return {
 				get:function(k){
-                    return typeof _tmp[k] == 'undefined'
-                    ? (defaultSettings[k] || null)
-                    : _tmp[k];
+                    return typeof _tmp[k] === 'undefined' ? (defaultSettings[k] || null) : _tmp[k];
                 },
 				set:function(k,v){ _tmp[k] = v; return v; },
-				save: function(){ _saveSettings(_tmp) }
-			}
+				save: function(){ _saveSettings(_tmp); }
+			};
 		},
 		val: function(k, v)
         {
             var settings = _retrieveSettings();
-            if(typeof v == 'undefined')
-                return typeof settings[k] == 'undefined'
-                            ? (defaultSettings[k] || null)
-                            : settings[k];
+            if(typeof v === 'undefined'){
+                return typeof settings[k] === 'undefined' ? (defaultSettings[k] || null) : settings[k];
+            }
             settings[k] = v;
             _saveSettings(settings);
             return me;
         }
-    }
+    });
 }]);

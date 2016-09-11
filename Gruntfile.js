@@ -71,9 +71,9 @@ module.exports = function (grunt) {
     servers: {
       test: {
         // command name default is node
-        //cmd: "node_modules/http-server/bin/http-server",
+        //cmd: 'node_modules/http-server/bin/http-server',
         // arguments, required
-        args: ["server/index.js"],
+        args: ['server/index.js'],
         // port settings
         ports: [9001],
         // keepalive default is false
@@ -234,7 +234,7 @@ module.exports = function (grunt) {
             }
           }
       }
-    }, 
+    },
 
     // Renames files for browser caching purposes
     filerev: {

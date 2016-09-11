@@ -16,7 +16,8 @@ angular
     'ngMaterial'
 ])
 .run(function(ServiceWorker){
-    ServiceWorker;
+    'use strict';
+    ServiceWorker.init();
 })
 .config(function ($routeProvider, $mdThemingProvider) {
     'use strict';
