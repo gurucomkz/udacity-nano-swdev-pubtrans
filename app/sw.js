@@ -5,10 +5,12 @@
 	var staticCacheName = cacheNamePrefix + 'static-v2';
 	var fontsCacheName = cacheNamePrefix + 'fonts-v2';
 	var apiCacheName = cacheNamePrefix + 'api-v1';
+	var skinCacheName = cacheNamePrefix + 'skin-v1';
 	var currentCaches = [
 		staticCacheName,
 		fontsCacheName,
 		apiCacheName
+//		skinCacheName
 	];
 
 	function regCaches(){
