@@ -117,7 +117,10 @@
               label="{{route.short_name}} ({{route.long_name}})">
             <md-list flex>
                 <md-divider ></md-divider>
-                <md-list-item class="md-3-line" ng-repeat="stopId in route.stopSequence">
+                <md-list-item
+                    class="md-2-line"
+                    ng-class="{'route-item-open': stopId == monitoredStop}"
+                    ng-repeat="stopId in route.stopSequence">
                     <!-- <img ng-src="{{item.face}}?{{$index}}" class="md-avatar" alt="{{item.who}}" /> -->
                     <div class="md-list-item-text" layout="column">
                         <h3>{{ allStationsWKeys[stopId].name }}</h3>
@@ -126,11 +129,20 @@
                                 {{ stopTime }} : {{stopTrips.length}} bus(es)<span ng-if="!$last">, </span>
                             </span>
                         </h4>
-                        <p>{{ item.notes }}</p>
                     </div>
-                    <md-button class="md-secondary" ng-click="openStopTracker(route.id, stopId)"
+                    <md-button
+                        class="md-secondary"
+                        ng-show="monitoredStop!=stopId"
+                        ng-click="monitoredStop=stopId"
                         aria-label="Open route details">
                         Details
+                    </md-button>
+                    <md-button
+                        class="md-secondary"
+                        ng-show="monitoredStop==stopId"
+                        ng-click="monitoredStop=0"
+                        aria-label="Open route details">
+                        Close
                     </md-button>
                     <md-divider ></md-divider>
                 </md-list-item>

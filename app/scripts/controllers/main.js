@@ -13,7 +13,8 @@ angular.module('pubTransApp')
     '$q',
     'GtfsUtils',
     '$timeout',
-function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout) {
+    '$mdBottomSheet',
+function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
     'use strict';
 
     $scope.operator = AppSettings.val('lastOperator');
@@ -25,6 +26,8 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout) {
     $scope.travelLine = AppSettings.val('lastLine');
     $scope.travelStart = AppSettings.val('lastStart');
     $scope.travelEnd = AppSettings.val('lastStop');
+
+    $scope.monitoredStop = null;
 
     $scope.travelStartTT = null;
     $scope.travelEndTT = null;
@@ -173,7 +176,7 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout) {
 
         query = (query||'').toLowerCase();
 
-        console.log(['lookup', query, position]);
+        //console.log(['lookup', query, position]);
         return connected
                     .filter(function(candidate){
                         return candidate && candidate.name && candidate.id !== (ignore || {id:null}).id &&
@@ -190,6 +193,15 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout) {
                         return candidate && candidate.Name &&
                             candidate.Name.toLowerCase().indexOf(query)>=0;
                     });
+    };
+
+    $scope.showListBottomSheet = function() {
+        $mdBottomSheet.show({
+            templateUrl: 'monitor-sheet.html',
+            controller: 'MonitorCtrl'
+        }).then(function(clickedItem) {
+            $scope.monitoredStop = null;
+        });
     };
 
     //stop timetable
