@@ -49,6 +49,10 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout) {
         return [d.getHours(),d.getMinutes()+1,d.getSeconds()].map(function(p){return p > 9 ? p : '0'+p;}).join(':');
     };
 
+    var stripSeconds = function(t){
+        return t.replace(/:\d+$/,'');
+    };
+
     var getRoutesBetween = function(a, b) {
         var routesBetween = [];
         var connectingTrips = hasConnection(a, b, true);
@@ -57,12 +61,13 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout) {
         console.log(['routes connecting', connectingRoutes]);
         routesBetween = [];
 
-        var thisTime = thisTimeString();
+        var thisTime = stripSeconds(thisTimeString());
 
         angular.forEach(connectingRoutes, function(tripIds, routeId) {
             var rData = $scope.allRoutes[routeId];
 
             rData.tripStops = {};
+            rData.tripIds = [];
             rData.stopTimes = {};
             rData.stopSequence = null;
 
@@ -70,23 +75,26 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout) {
                 var path = {}, started = false, stopSequenceTpl = [];
                 angular.forEach($scope.stoptimesByTrip[tripId], function (stopEntry, seqId) {
                     if(!started && stopEntry.stop_id == b){
-                        console.log("ACHTUNG! Stop appears before start!! in tripId="+tripId+", seq="+stopEntry.stop_sequence);
-                        //looks like reverse trip.
-                        //swapping
-                        var c = b;
-                        b=a;
-                        a=c;
+                        //looks like reverse trip. swapping
+                        var c = b; b = a; a = c;
                     }
                     if(!started && stopEntry.stop_id == a || started){
                         started = true;
-                        path[stopEntry.arrival_time] = stopEntry.stop_id;
+
+                        var arrivalTime = stripSeconds(stopEntry.arrival_time);
+                        if(arrivalTime < thisTime){
+                            return;
+                        }
+
+                        path[arrivalTime] = stopEntry.stop_id;
+
                         if(!(stopEntry.stop_id in rData.stopTimes)){
                             rData.stopTimes[stopEntry.stop_id] = {};
                         }
-                        if(stopEntry.arrival_time < thisTime){ 
-                            return;
+                        if(!rData.stopTimes[stopEntry.stop_id][arrivalTime]){
+                            rData.stopTimes[stopEntry.stop_id][arrivalTime] = [];
                         }
-                        rData.stopTimes[stopEntry.stop_id][stopEntry.arrival_time] = tripId;
+                        rData.stopTimes[stopEntry.stop_id][arrivalTime].push(tripId);
                         if(!rData.stopSequence){
                             stopSequenceTpl.push(stopEntry.stop_id);
                         }
@@ -98,7 +106,10 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout) {
                         }
                     }
                 });
-                rData.tripStops[tripId] = path;
+                if(Object.keys(path).length){
+                    rData.tripStops[tripId] = path;
+                    rData.tripIds.push(tripId);
+                }
             });
             //angular.forEach(rData.stopTimes,function(timearr))
             routesBetween.push(rData);

@@ -121,7 +121,11 @@
                     <!-- <img ng-src="{{item.face}}?{{$index}}" class="md-avatar" alt="{{item.who}}" /> -->
                     <div class="md-list-item-text" layout="column">
                         <h3>{{ allStationsWKeys[stopId].name }}</h3>
-                        <h4>{{ item.what }}</h4>
+                        <h4>Next stop times:
+                            <span ng-repeat="(stopTime, stopTrips) in route.stopTimes[stopId]">
+                                {{ stopTime }} : {{stopTrips.length}} bus(es)<span ng-if="!$last">, </span>
+                            </span>
+                        </h4>
                         <p>{{ item.notes }}</p>
                     </div>
                     <md-button class="md-secondary" ng-click="openStopTracker(route.id, stopId)"
