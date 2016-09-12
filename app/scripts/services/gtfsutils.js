@@ -16,24 +16,37 @@ function ($http) {
     //var apiKey = '4bad51fb-4b43-4464-9f5e-e69576651176';
 
     var urlOperators = 'http://localhost:9001/carriers.json';
-    var urlOperatorLines = 'http://localhost:9001/gtfs/{}/routes.txt';
+    var urlOperatorRoutes = 'http://localhost:9001/gtfs/{}/routes.txt';
     var urlOperatorStops = 'http://localhost:9001/gtfs/{}/stops.txt';
     var urlOperatorStopsTimes = 'http://localhost:9001/gtfs/{}/stop_times.txt';
+    var urlOperatorTrips = 'http://localhost:9001/gtfs/{}/trips.txt';
 
     //fetchers
-    this.fetchOperatorLines = function(operId) {
-        return $http.get(urlOperatorLines.replace('{}',operId))
-                .then(responseParseCSV);
+    this.fetchOperatorRoutes = function(operId) {
+        return $http.get(urlOperatorRoutes.replace('{}',operId))
+                .then(responseParseCSV)
+                .then(makeKeymaker('id'));
+    };
+
+    this.fetchOperatorTrips = function(operId) {
+        return $http.get(urlOperatorTrips.replace('{}',operId))
+                .then(responseParseCSV)
+                .then(makeGrouper('route_id'));
     };
 
     this.fetchOperatorStops = function(operId) {
         return $http.get(urlOperatorStops.replace('{}',operId))
-                .then(responseParseCSV);
+                .then(responseParseCSV)
+                .then(makeFiller({'operator_id': operId}))
+                .then(makeKeymaker('id'));
     };
 
-    this.fetchTimetables = function(operId){
+    this.fetchStopTimes = function(operId){
         return $http.get(urlOperatorStopsTimes.replace('{}',operId))
-                .then(responseParseCSV);
+                .then(responseParseCSV)
+                .then(makeTimeProcessor('arrival_time', 'time'))
+                //.then(makeTimeProcessor('departure_time'))
+                .then(makeGrouper('trip_id'));
     };
 
     this.fetchOperators = function () {
@@ -51,7 +64,97 @@ function ($http) {
         });
     };
 
+    //transformators
+
+    this.hasConnection = function(stoptimesByTrip, id1, id2, all){
+        var connection = all ? [] : false;
+        var _find = function(trip,id){
+            return trip.filter(function(stop) {
+                return stop.stop_id === id;
+            }).length;
+        };
+        var _getSeqId = function(trip, stopId){
+            var entry = trip.find(function(stopEntry) {
+                return stopEntry.stop_id == stopId;
+            });
+            return entry ? entry.stop_sequence : undefined;
+        };
+
+        var _getAllSeqId = function(trip, stopId){
+            var entries = trip.filter(function(stopEntry) {
+                return stopEntry.stop_id == stopId;
+            });
+            return entries.map(function(stopEntry) {
+                return stopEntry.stop_sequence;
+            });
+        };
+        angular.forEach(stoptimesByTrip, function(tripData, trip_id){
+            if(_find(tripData,id1) && _find(tripData,id2)){
+            //    console.log(['found both '+id1+' and '+ id2+' in trip='+trip_id, _getAllSeqId(tripData,id1), _getAllSeqId(tripData,id2)]);
+                if(all){
+                    connection.push(parseInt(trip_id));
+                }else{
+                    connection = true;
+                    return false;
+                }
+            }
+        });
+        return connection;
+    };
+
     //converters
+    var makeTimeProcessor = function(field, convertTo){
+        return function(dataArray){
+            return new Promise(function(resolve) {
+                resolve(dataArray.map(function(entry){
+                    try{
+                        var tms = entry[field].split(':');
+                        entry[convertTo || field] = new Date(1970,0,1,parseInt(tms[0]),parseInt(tms[1]),parseInt(tms[2]));
+                    }catch(e){}
+                    return entry;
+                }));
+            });
+        };
+    };
+
+    var makeFiller = function(append){
+        return function(dataArray){
+            return new Promise(function(resolve) {
+                resolve(dataArray.map(function(entry){
+                    angular.forEach(append, function(value, key) {
+                        entry[key] = value;
+                    });
+                    return entry;
+                }));
+            });
+        };
+    };
+
+    var makeKeymaker = function(keyField){
+        return function(dataArray){
+            return new Promise(function(resolve) {
+                var outObj = {};
+                dataArray.forEach(function(dataEntry) {
+                    outObj[dataEntry[keyField]] = dataEntry;
+                });
+                resolve(outObj);
+            });
+        };
+    };
+
+    var makeGrouper = function(keyField){
+        return function(dataArray){
+            return new Promise(function(resolve) {
+                var outObj = {};
+                dataArray.forEach(function(dataEntry) {
+                    if(!(dataEntry[keyField] in outObj))
+                        outObj[dataEntry[keyField]] = [];
+                    outObj[dataEntry[keyField]].push(dataEntry);
+                });
+                resolve(outObj);
+            });
+        };
+    };
 
     this.array2object = function(data, keyField){
         var ret = {};
@@ -86,7 +189,7 @@ function ($http) {
                 muPC = keyP[k];
             }
         }
-        if(muP.length && muPC && muPC > keys.length){
+        if(muP.length && muPC && muPC > keys.length/2){
             keys = keys.map(function(k){
                 return k.replace(muP,'');
             });

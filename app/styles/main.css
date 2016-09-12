@@ -18,6 +18,10 @@ body {
     border-top: 1px solid #ddd;
 }
 
+.md-toolbar-tools h3.subheader-text{
+    font-size: 15px;
+}
+
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
 
