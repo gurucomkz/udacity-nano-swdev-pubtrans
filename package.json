@@ -29,17 +29,10 @@
     "jasmine-core": "^2.5.1",
     "jit-grunt": "^0.9.1",
     "jshint-stylish": "^1.0.0",
-    "karma": "^1.2.0",
-    "karma-jasmine": "^1.0.2",
-    "karma-phantomjs-launcher": "^1.0.2",
-    "phantomjs-prebuilt": "^2.1.12",
     "time-grunt": "^1.0.0"
   },
   "engines": {
     "node": ">=0.10.0"
-  },
-  "scripts": {
-    "test": "karma start test/karma.conf.js"
   },
   "dependencies": {
     "express": "^4.14.0",

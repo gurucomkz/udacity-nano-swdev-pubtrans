@@ -5,13 +5,16 @@ version 0.15.1.
 
 ## Build & development
 
-Run `grunt` for building and `grunt serve` (NOT `grunt serve:dist` !!!) for preview.
+* `npm install`
+* `bower install`
+
+Run `grunt` for building and `grunt serve` for preview.
 
 ## Test Data Server
 
-You may see `grunt serve` (NOT `grunt serve:dist` !!!) tries to run node server on port 9001.
+`grunt serve` also tries to run node server on port 9001.
 
-If you open app from `dist` folder, you can manually run server with `node server/index.js`.
+If you open app from `dist` folder without `grunt serve`, you can manually run server with `node server/index.js`.
 
 I'm sure there is no need to include server into `dist` because it is a separate
 instance intended to run in separate environment.
@@ -29,6 +32,9 @@ Here you have switch for server mode.
 
 These switches do not affect server's ability to provide us with controls.
 
-## Testing
+## Note about vehicle arrival predictions
 
-No tests implemented.
+Not all carriers provide accurate data about all the vehicles.
+Stop ids may differ also.
+
+Therefore there is no guarantee that 511.org will return any realtime data for any particular trip.
