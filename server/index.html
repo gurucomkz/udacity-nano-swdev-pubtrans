@@ -1,0 +1,91 @@
+<!doctype html>
+<html ng-app="pubTransServerApp">
+  <head>
+    <meta charset="utf-8">
+    <title>PubTrans Server</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <!-- build:css(.) styles/vendor.css -->
+    <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/angular-material/angular-material.css" />
+    <!-- endbower -->
+    <!-- endbuild -->
+	<style>#license-footer {
+	    align-self: flex-end;
+	    padding: 16px 32px;
+	    width: 100%;
+	    text-align: center;
+	    font-size: small;
+	    border-top: 1px solid #ddd;
+	}</style>
+  </head>
+  <body layout="column" ng-cloak ng-controller="ServerCtrl">
+
+
+    <md-toolbar class="md-whiteframe-glow-z1 site-content-toolbar">
+        <div class="md-toolbar-tools">
+            <h3>
+                <span>PubTrans Server Control</span>
+            </h3>
+        </div>
+    </md-toolbar>
+
+    <md-content md-scroll-y layout="column" ng-view flex>
+		<md-card>
+			<md-card-title>
+				<md-card-title-text>
+					<span class="md-headline">Current server mode</span>
+				</md-card-title-text>
+			</md-card-title>
+			<md-card-content>
+				Current server mode: {{currentMode}}
+			</md-card-content>
+			<md-card-actions layout="row" layout-align="end center">
+				<md-button ng-click="getMode()">Refresh</md-button>
+	        </md-card-actions>
+		</md-card>
+		<md-card>
+			<md-card-title>
+				<md-card-title-text>
+					<span class="md-headline">Set server mode</span>
+				</md-card-title-text>
+			</md-card-title>
+			<md-card-content>
+				<md-radio-group ng-model="rqMode">
+					<md-radio-button value="online" class="md-primary">Online</md-radio-button>
+					<md-radio-button value="offline">Offline</md-radio-button>
+					<md-radio-button value="liefi">Lie-Fi</md-radio-button>
+					<md-radio-button value="slow">Slow</md-radio-button>
+				</md-radio-group>
+			</md-card-content>
+		</md-card>
+    </md-content>
+
+    <md-toolbar class="md-whiteframe-glow-z1 site-content-toolbar">
+        <div class="md-toolbar-tools" id="license-footer">
+                <span>Implemented @ 2016 by <a href="https://github.com/gurucomkz/">Sergey Shevchenko</a> for
+                    <a href="https://www.udacity.com/course/senior-web-developer-nanodegree-by-google--nd802" target="_blank">Senior Web Developer Udacity Nanodegree</a></span>
+        </div>
+    </md-toolbar>
+
+
+
+    <!-- build:js(.) scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.0-beta.1/angular.min.js"></script>
+    <script src="bower_components/angular-cookies/angular-cookies.js"></script>
+    <script src="bower_components/angular-messages/angular-messages.js"></script>
+    <script src="bower_components/angular-resource/angular-resource.js"></script>
+    <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.js"></script>
+    <script src="bower_components/angular-aria/angular-aria.js"></script>
+    <script src="bower_components/angular-material/angular-material.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
+
+        <!-- build:js({.tmp,server}) scripts/scripts.js -->
+        <script src="scripts/app.js"></script>
+        <script src="scripts/controllers/server.js"></script>
+        <!-- endbuild -->
+</body>
+</html>
