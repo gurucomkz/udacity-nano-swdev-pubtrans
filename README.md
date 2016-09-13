@@ -31,4 +31,4 @@ These switches do not affect server's ability to provide us with controls.
 
 ## Testing
 
-Running `grunt test` will run the unit tests with karma.
+No tests implemented.
