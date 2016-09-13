@@ -8,13 +8,11 @@
 angular.module('pubTransApp')
 .controller('MainCtrl', [
     '$scope',
-    '$http',
     'AppSettings',
-    '$q',
     'GtfsUtils',
     '$timeout',
-    '$mdBottomSheet',
-function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
+    '$mdToast',
+function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast) {
     'use strict';
 
     $scope.operator = AppSettings.val('lastOperator');
@@ -27,25 +25,64 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
     $scope.travelStart = AppSettings.val('lastStart');
     $scope.travelEnd = AppSettings.val('lastStop');
 
-    $scope.monitoredStop = null;
-
-    $scope.travelStartTT = null;
-    $scope.travelEndTT = null;
+    $scope.forecasts = {};
 
     $scope.formHidden = $scope.travelStart && $scope.travelEnd;
     //$scope.formHidden = false;
 
     $scope.toggleForm = function(){
         $scope.formHidden = !$scope.formHidden;
-        if(!$scope.formHidden){
-            $scope.routes = null;
-        }
     };
 
     $scope.stationsReady = function() {
         $scope.formHidden = true;
         $scope.routes = getRoutesBetween($scope.travelStart.id , $scope.travelEnd.id);
         console.log(['routes between', $scope.routes]);
+    };
+
+    var forecastTimer = null;
+    var stopForecatsFetching = function() {
+        $scope.forecasts = {};
+        if(forecastTimer){
+            forecastTimer();
+            forecastTimer = null;
+        }
+    };
+    var getForecast = function(){
+        $mdToast.show(
+            $mdToast.simple().textContent('Updating forecasts...').position('bottom').hideDelay(1000)
+        );
+        GtfsUtils.remoteTimetable($scope.operator.RemoteId)
+        .then(function(data) {
+            $scope.forecasts = {};
+
+            if(!data.updates){
+                $mdToast.show(
+                    $mdToast.simple().textContent('Sorry, no updates on this operator!').position('bottom').hideDelay(3000)
+                );
+                return;
+            }
+            if(!data.updates.length){
+                $mdToast.show(
+                    $mdToast.simple().textContent('No predictions available. Maybe its night in CA?').position('bottom').hideDelay(30000)
+                );
+                return;
+            }
+
+            angular.forEach(data.updates, function(update) {
+                angular.forEach(update.stops, function(timeData, stopId) {
+                    if(!(stopId in $scope.forecasts)){
+                        $scope.forecasts[stopId] = [];
+                    }
+                    $scope.forecasts[stopId] = (timeData.arrival || timeData.departure)*1000;
+                });
+            });
+
+            forecastTimer = $timeout(getForecast, 60000);
+        })
+        .catch(function() {
+            forecastTimer = $timeout(getForecast, 5000);
+        })
     };
 
     var thisTimeString = function(d){
@@ -58,6 +95,10 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
     };
 
     var getRoutesBetween = function(a, b) {
+        if(!$scope.tripsByRoute || !$scope.allRoutes){
+            console.log('not ready yet');
+            return;
+        }
         var routesBetween = [];
         var connectingTrips = hasConnection(a, b, true);
         var connectingRoutes = getRoutesForTrips(connectingTrips);
@@ -253,32 +294,24 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
         .then(function(tripData) {
             console.log(['tripsByRoute', tripData]);
             $scope.tripsByRoute = tripData;
-
-            if($scope.formHidden){
-                $scope.stationsReady();
-            }
+            $scope.stationsReady();
         });
     });
 
+    $scope.$watch('formHidden', function(newVal){
+        if(newVal){
+            $scope.stationsReady();
+            getForecast();
+        }else{
+            $scope.routes = null;
+            stopForecatsFetching();
+        }
+    });
 
     $scope.$watch('travelStart', function(newVal){
-        if(!newVal){
-            return;
-        }
         AppSettings.val('lastStart', newVal);
-        // $scope.fetchTimetables(newVal.id)
-        // .then(function(data) {
-        //     console.log(['travelStart TT',data]);
-        //     try{
-        //         data = data.Siri.ServiceDelivery.TimetableStopVisit;
-        //     }catch(e){}
-        //     $scope.travelStartTT = data;
-        // })
     });
     $scope.$watch('travelEnd', function(newVal){
-        if(!newVal){
-            return;
-        }
         AppSettings.val('lastStop', newVal);
     });
 }]);

@@ -19,6 +19,7 @@ function ($scope, $http) {
 		$http.get('/getmode')
 		.then(function(rsp) {
 			$scope.currentMode = rsp.data.mode;
+			$scope.rqMode = rsp.data.mode;
 		})
 	};
 

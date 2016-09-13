@@ -13,8 +13,6 @@ angular.module('pubTransApp')
 function ($http) {
     var me = this;
 
-    var apiKey = '4bad51fb-4b43-4464-9f5e-e69576651176';
-
     var urlOperators = 'http://localhost:9001/gtfs/carriers.json';
     var urlOperatorRoutes = 'http://localhost:9001/gtfs/{}/routes.txt';
     var urlOperatorStops = 'http://localhost:9001/gtfs/{}/stops.txt';
@@ -84,21 +82,21 @@ function ($http) {
                 return stop.stop_id === id;
             }).length;
         };
-        var _getSeqId = function(trip, stopId){
-            var entry = trip.find(function(stopEntry) {
-                return stopEntry.stop_id == stopId;
-            });
-            return entry ? entry.stop_sequence : undefined;
-        };
+        // var _getSeqId = function(trip, stopId){
+        //     var entry = trip.find(function(stopEntry) {
+        //         return stopEntry.stop_id == stopId;
+        //     });
+        //     return entry ? entry.stop_sequence : undefined;
+        // };
 
-        var _getAllSeqId = function(trip, stopId){
-            var entries = trip.filter(function(stopEntry) {
-                return stopEntry.stop_id == stopId;
-            });
-            return entries.map(function(stopEntry) {
-                return stopEntry.stop_sequence;
-            });
-        };
+        // var _getAllSeqId = function(trip, stopId){
+        //     var entries = trip.filter(function(stopEntry) {
+        //         return stopEntry.stop_id == stopId;
+        //     });
+        //     return entries.map(function(stopEntry) {
+        //         return stopEntry.stop_sequence;
+        //     });
+        // };
         angular.forEach(stoptimesByTrip, function(tripData, trip_id){
             if(_find(tripData,id1) && _find(tripData,id2)){
             //    console.log(['found both '+id1+' and '+ id2+' in trip='+trip_id, _getAllSeqId(tripData,id1), _getAllSeqId(tripData,id2)]);
@@ -158,8 +156,9 @@ function ($http) {
             return new Promise(function(resolve) {
                 var outObj = {};
                 dataArray.forEach(function(dataEntry) {
-                    if(!(dataEntry[keyField] in outObj))
+                    if(!(dataEntry[keyField] in outObj)){
                         outObj[dataEntry[keyField]] = [];
+                    }
                     outObj[dataEntry[keyField]].push(dataEntry);
                 });
                 resolve(outObj);

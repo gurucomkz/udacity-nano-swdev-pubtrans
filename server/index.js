@@ -14,7 +14,7 @@ var options = {
     redirect: false
 };
 
-var MODE = 'online'; //online|offline|liefi|low
+var MODE = 'online'; //online|offline|liefi|slow
 
 function CORS(req, res, next) {
     //CORS!
@@ -31,7 +31,7 @@ function checkMode(req, res, next) {
         case 'liefi':
             //just forget
             return;
-        case 'low':
+        case 'slow':
             //wait 10 s
             setTimeout(next, 20*1000);
             return;

@@ -119,7 +119,6 @@
                 <md-divider ></md-divider>
                 <md-list-item
                     class="md-3-line"
-                    ng-class="{'route-item-open': stopId == monitoredStop}"
                     ng-repeat="stopId in route.stopSequence">
                     <!-- <img ng-src="{{item.face}}?{{$index}}" class="md-avatar" alt="{{item.who}}" /> -->
                     <div class="md-list-item-text" layout="column">
@@ -129,7 +128,10 @@
                                 {{ stopTime }}<span ng-if="!$last">, </span>
                             </span>
                         </h4>
-                        <p ng-if="forecasts[stopId]">{{forecasts[stopId]|date:"HH:mm:ss"}}</p>
+                    </div>
+                    <div ng-if="forecasts[stopId]" class="md-list-item-text" layout="column" style="min-width:100px;text-align:center;">
+                        <h3>Estimation</h3>
+                        <span>{{forecasts[stopId]|date:"HH:mm"}}</span>
                     </div>
                     <md-divider ></md-divider>
                 </md-list-item>
