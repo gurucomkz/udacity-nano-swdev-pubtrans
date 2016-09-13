@@ -82,7 +82,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast) {
         })
         .catch(function() {
             forecastTimer = $timeout(getForecast, 5000);
-        })
+        });
     };
 
     var thisTimeString = function(d){
@@ -160,7 +160,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast) {
             routesBetween.push(rData);
         });
 
-
+        getForecast();
         console.log(['routes connecting Data', routesBetween]);
         return routesBetween;
     };
@@ -301,7 +301,6 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast) {
     $scope.$watch('formHidden', function(newVal){
         if(newVal){
             $scope.stationsReady();
-            getForecast();
         }else{
             $scope.routes = null;
             stopForecatsFetching();

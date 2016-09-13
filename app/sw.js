@@ -15,25 +15,27 @@
 
 	function regCaches(){
 		return caches.open(staticCacheName).then(function(cache) {
-			// return cache.addAll([
-			// 	'/'
-			// ]);
-		});
-	}
-
-	function regFonts(){
-		return caches.open(fontsCacheName).then(function(cache) {
 			return cache.addAll([
-				'https://fonts.gstatic.com/s/roboto/v15/2UX7WLTfW3W8TclTUvlFyQ.woff',
-				'https://fonts.gstatic.com/s/roboto/v15/d-6IYplOFocCacKzxwXSOD8E0i7KZn-EPnyo3HZu7kw.woff'
+				'/'
 			]);
 		});
 	}
 
+	// function regFonts(){
+	// 	return caches.open(fontsCacheName).then(function(cache) {
+	// 		return cache.addAll([
+	// 			'https://fonts.gstatic.com/s/roboto/v15/2UX7WLTfW3W8TclTUvlFyQ.woff',
+	// 			'https://fonts.gstatic.com/s/roboto/v15/d-6IYplOFocCacKzxwXSOD8E0i7KZn-EPnyo3HZu7kw.woff'
+	// 		]);
+	// 	});
+	// }
+
 	function serveApi(request) {
 		return caches.open(apiCacheName).then(function(cache) {
 			return cache.match(request).then(function(response) {
-				if (response) return response;
+				if (response){
+					return response;
+				}
 
 				return fetch(request).then(function(networkResponse) {
 					cache.put(request, networkResponse.clone());
@@ -61,7 +63,7 @@
 	self.addEventListener('install', function(event) {
 		event.waitUntil(
 			regCaches()
-			.then(regFonts())
+			//.then(regFonts())
 		);
 	});
 
