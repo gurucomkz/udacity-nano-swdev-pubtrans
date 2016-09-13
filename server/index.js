@@ -3,7 +3,7 @@ var express = require('express'),
     GtfsRealtimeBindings = require('gtfs-realtime-bindings'),
     request = require('request'),
     api511key = '4bad51fb-4b43-4464-9f5e-e69576651176',
-    port = process.env.PORT || 4000;
+    port = process.env.PORT || 9001;
 
 var options = {
     dotfiles: 'ignore',
