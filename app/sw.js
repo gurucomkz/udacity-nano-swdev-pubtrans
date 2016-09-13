@@ -4,10 +4,10 @@
 	var cacheNamePrefix = 'pubtrans-';
 	var staticCacheName = cacheNamePrefix + 'static-v2';
 	var fontsCacheName = cacheNamePrefix + 'fonts-v2';
-	var apiCacheName = cacheNamePrefix + 'api-v1';
+	var apiCacheName = cacheNamePrefix + 'api-v2';
 	var skinCacheName = cacheNamePrefix + 'skin-v1';
 	var currentCaches = [
-		staticCacheName,
+		//staticCacheName,
 		fontsCacheName,
 		apiCacheName
 //		skinCacheName
@@ -15,9 +15,9 @@
 
 	function regCaches(){
 		return caches.open(staticCacheName).then(function(cache) {
-			return cache.addAll([
-				'/'
-			]);
+			// return cache.addAll([
+			// 	'/'
+			// ]);
 		});
 	}
 
@@ -84,8 +84,12 @@
 		var requestUrl = new URL(event.request.url);
 
 		if (requestUrl.origin === 'http://localhost:9001') {
-			event.respondWith(serveApi(event.request));
-			return;
+			if (requestUrl.pathname.startsWith('/gtfs/') ||
+				requestUrl.pathname.startsWith('/carriers.json')
+			){
+				event.respondWith(serveApi(event.request));
+				return;
+			}
 		}
 
 		if (requestUrl.origin === 'https://api.511.org') {

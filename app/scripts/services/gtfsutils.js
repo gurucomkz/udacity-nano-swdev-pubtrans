@@ -13,13 +13,14 @@ angular.module('pubTransApp')
 function ($http) {
     var me = this;
 
-    //var apiKey = '4bad51fb-4b43-4464-9f5e-e69576651176';
+    var apiKey = '4bad51fb-4b43-4464-9f5e-e69576651176';
 
-    var urlOperators = 'http://localhost:9001/carriers.json';
+    var urlOperators = 'http://localhost:9001/gtfs/carriers.json';
     var urlOperatorRoutes = 'http://localhost:9001/gtfs/{}/routes.txt';
     var urlOperatorStops = 'http://localhost:9001/gtfs/{}/stops.txt';
     var urlOperatorStopsTimes = 'http://localhost:9001/gtfs/{}/stop_times.txt';
     var urlOperatorTrips = 'http://localhost:9001/gtfs/{}/trips.txt';
+    var urlOperatorOnline = 'http://localhost:9001/updates/{1}';  //{1}: operator, {2}: stopId
 
     //fetchers
     this.fetchOperatorRoutes = function(operId) {
@@ -56,10 +57,20 @@ function ($http) {
                     var opers = response.data.map(function(oper){
                         return {
                             Name: oper.CarrierName,
-                            Id: oper.CarrierID
+                            Id: oper.CarrierID,
+                            RemoteId: oper.RemoteId
                         };
                     });
                     resolve(opers);
+                }, reject);
+        });
+    };
+
+    this.remoteTimetable = function(operId, stopId){
+        return new Promise(function(resolve, reject) {
+            $http.get(urlOperatorOnline.replace('{1}',operId).replace('{2}',stopId))
+                .then(function(response){
+                    resolve(response.data);
                 }, reject);
         });
     };

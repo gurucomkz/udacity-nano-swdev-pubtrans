@@ -40,9 +40,10 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
         if(!$scope.formHidden){
             $scope.routes = null;
         }
-    }
+    };
 
     $scope.stationsReady = function() {
+        $scope.formHidden = true;
         $scope.routes = getRoutesBetween($scope.travelStart.id , $scope.travelEnd.id);
         console.log(['routes between', $scope.routes]);
     };
@@ -76,12 +77,12 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
 
             angular.forEach(tripIds, function(tripId) {
                 var path = {}, started = false, stopSequenceTpl = [];
-                angular.forEach($scope.stoptimesByTrip[tripId], function (stopEntry, seqId) {
-                    if(!started && stopEntry.stop_id == b){
+                angular.forEach($scope.stoptimesByTrip[tripId], function (stopEntry) {
+                    if(!started && stopEntry.stop_id === b){
                         //looks like reverse trip. swapping
                         var c = b; b = a; a = c;
                     }
-                    if(!started && stopEntry.stop_id == a || started){
+                    if(!started && stopEntry.stop_id === a || started){
                         started = true;
 
                         var arrivalTime = stripSeconds(stopEntry.arrival_time);
@@ -101,7 +102,7 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
                         if(!rData.stopSequence){
                             stopSequenceTpl.push(stopEntry.stop_id);
                         }
-                        if(stopEntry.stop_id == b){
+                        if(stopEntry.stop_id === b){
                             if(!rData.stopSequence){
                                 rData.stopSequence = stopSequenceTpl;
                             }
@@ -121,7 +122,7 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
 
         console.log(['routes connecting Data', routesBetween]);
         return routesBetween;
-    }
+    };
 
     var getRoutesForTrips = function(tripIds) {
         if(tripIds && !(length in tripIds)){
@@ -135,7 +136,7 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
             var have = allRouteIds.find(function(routeId){
                 return !!$scope.tripsByRoute[routeId].filter(function(trip) {
                     return trip.trip_id === tripId;
-                })
+                });
             });
             if(have){
                 if(!(have in routeIds)){
@@ -146,7 +147,7 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
         });
 
         return routeIds;
-    }
+    };
 
     $scope.stationChange = function(station, position){
         $scope[position === 'start' ? 'travelStart' : 'travelEnd'] = station;
@@ -194,18 +195,6 @@ function ($scope, $http, AppSettings, $q, GtfsUtils, $timeout, $mdBottomSheet) {
                             candidate.Name.toLowerCase().indexOf(query)>=0;
                     });
     };
-
-    $scope.showListBottomSheet = function() {
-        $mdBottomSheet.show({
-            templateUrl: 'monitor-sheet.html',
-            controller: 'MonitorCtrl'
-        }).then(function(clickedItem) {
-            $scope.monitoredStop = null;
-        });
-    };
-
-    //stop timetable
-    //https://api.511.org/transit/stoptimetable?format=json&OperatorRef=SFMTA&MonitoringRef=13008&api_key=4bad51fb-4b43-4464-9f5e-e69576651176
 
     $scope.fetchOperatorTrips = function() {
         if(!$scope.operator || !$scope.operator.Id){

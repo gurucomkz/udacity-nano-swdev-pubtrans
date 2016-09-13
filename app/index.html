@@ -2,7 +2,7 @@
 <html ng-app="pubTransApp">
   <head>
     <meta charset="utf-8">
-    <title></title>
+    <title>PubTrans</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
@@ -22,8 +22,12 @@
     <md-toolbar class="md-whiteframe-glow-z1 site-content-toolbar">
         <div class="md-toolbar-tools">
             <h3>
-                <span>Public transportation</span>
+                <span>PubTrans App</span>
             </h3>
+            <span flex></span>
+
+            <md-button class="md-secondary" ng-href="http://localhost:9001/" target="pubtranscontrol">CTRL</md-button>
+
         </div>
     </md-toolbar>
 
@@ -64,7 +68,6 @@
         <script src="scripts/services/serviceworker.js"></script>
         <script src="scripts/services/appsettings.js"></script>
         <script src="scripts/services/gtfsutils.js"></script>
-        <script src="scripts/controllers/monitor.js"></script>
         <!-- endbuild -->
 </body>
 </html>
