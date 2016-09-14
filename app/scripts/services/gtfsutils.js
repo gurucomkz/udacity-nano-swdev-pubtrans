@@ -23,9 +23,19 @@ function ($http, GtfsDB) {
 
     //fetchers
     this.fetchOperatorRoutes = function(operId) {
-        return $http.get(urlOperatorRoutes.replace('{}',operId))
-                .then(responseParseCSV)
-                .then(makeKeymaker('id'));
+        return new Promise(function(resolve, reject) {
+            GtfsDB.getRoutes(operId)
+                .catch(function() {
+                    return $http.get(urlOperatorRoutes.replace('{}',operId))
+                            .then(responseParseCSV)
+                            .then(function(d) {
+                                return GtfsDB.saveRoutes(operId, d);
+                            });
+                })
+                .then(makeKeymaker('id'))
+                .then(resolve)
+                .catch(reject);
+        });
     };
 
     this.fetchOperatorTrips = function(operId) {
