@@ -8,9 +8,9 @@
 	var skinCacheName = cacheNamePrefix + 'skin-v1';
 	var currentCaches = [
 		//staticCacheName,
-		fontsCacheName,
-		apiCacheName
-//		skinCacheName
+		//fontsCacheName,
+		apiCacheName,
+		skinCacheName
 	];
 
 	function regCaches(){
@@ -61,10 +61,10 @@
 	}
 
 	self.addEventListener('install', function(event) {
-		event.waitUntil(
-			regCaches()
-			//.then(regFonts())
-		);
+		// event.waitUntil(
+		// 	regCaches()
+		// 	//.then(regFonts())
+		// );
 	});
 
 	self.addEventListener('activate', function(event) {
@@ -94,22 +94,13 @@
 			}
 		}
 
-		if (requestUrl.origin === 'https://api.511.org') {
-			if (requestUrl.pathname.startsWith('/transit/operators')
-				||requestUrl.pathname.startsWith('/transit/stops')
-				||requestUrl.pathname.startsWith('/transit/lines')
-				||requestUrl.pathname.startsWith('/transit/timetable')
-			) {
-				event.respondWith(serveApi(event.request));
-				return;
-			}
-		}
-
 		if (requestUrl.origin === location.origin) {
 			//skin is retrieved from cache but still looks for updates, just in case
 			if (
-				//requestUrl.pathname.startsWith('/views/') ||
+				requestUrl.pathname == '/' ||
+				requestUrl.pathname.startsWith('/views/') ||
 				requestUrl.pathname.startsWith('/styles/') ||
+				requestUrl.pathname.startsWith('/scripts/') ||
 				requestUrl.pathname.startsWith('/bower_components/')
 			)
 			{

@@ -12,7 +12,8 @@ angular.module('pubTransApp')
     'GtfsUtils',
     '$timeout',
     '$mdToast',
-function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast) {
+    '$interval',
+function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     'use strict';
 
     $scope.operator = AppSettings.val('lastOperator');
@@ -28,6 +29,12 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast) {
     $scope.forecasts = {};
 
     $scope.formHidden = $scope.travelStart && $scope.travelEnd;
+    $scope.allTimesExpanded = false;
+    $scope.ttSize = 20;
+    $scope.toggleTTsize = function() {
+        $scope.allTimesExpanded = !$scope.allTimesExpanded;
+        $scope.ttSize = $scope.allTimesExpanded?1000:20;
+    }
     //$scope.formHidden = false;
 
     $scope.toggleForm = function(){
@@ -90,7 +97,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast) {
     };
 
     var thisTimeString = function(d){
-        if(!d){ d = new Date(); }
+        if(!d){ d = new Date($scope.timeInCA); }
         return [d.getHours(),d.getMinutes()+1,d.getSeconds()].map(function(p){return p > 9 ? p : '0'+p;}).join(':');
     };
 
@@ -98,6 +105,21 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast) {
         return t.replace(/:\d+$/,'');
     };
 
+    $scope.timeInCA = null;
+
+    $interval(function(){
+        var offset = -7;
+        var d = new Date();
+        var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+        $scope.timeInCA = new Date(utc + (3600000*offset));
+    }, 1000);
+    /*
+        provide object for each route
+
+        must include:
+            * stop sequence for each trip
+            * timetable for start point
+    */
     var getRoutesBetween = function(a, b) {
         if(!$scope.tripsByRoute || !$scope.allRoutes){
             console.log('not ready yet');
@@ -120,6 +142,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast) {
             rData.stopTimes = {};
             rData.stopTimesRoutes = {};
             rData.stopSequence = null;
+            rData.stopSequenceByTrip = {};
 
             angular.forEach(tripIds, function(tripId) {
                 var path = {}, started = false, stopSequenceTpl = [];
@@ -148,6 +171,10 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast) {
                         if(!rData.stopSequence){
                             stopSequenceTpl.push(stopEntry.stop_id);
                         }
+                        if(!(tripId in rData.stopSequenceByTrip)){
+                            rData.stopSequenceByTrip[tripId] = [];
+                        }
+                        rData.stopSequenceByTrip[tripId].push(stopEntry);
                         if(stopEntry.stop_id === b){
                             if(!rData.stopSequence){
                                 rData.stopSequence = stopSequenceTpl;
@@ -274,13 +301,15 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast) {
     //  watchers  //
     ////////////////
 
-    $scope.$watch('operator', function(newVal){
+    $scope.$watch('operator', function(newVal, oldVal){
         //console.log(['new operator', newVal]);
         $scope.allStations = null;
         $scope.allStationsWKeys = null;
         $scope.allLines = null;
-        $scope.travelStart = null;
-        $scope.travelEnd = null;
+        if(!oldVal){
+            $scope.travelStart = null;
+            $scope.travelEnd = null;
+        }
         if(!newVal){
             return;
         }
