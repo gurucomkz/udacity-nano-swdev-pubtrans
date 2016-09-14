@@ -8,6 +8,7 @@
  */
 angular
 .module('pubTransApp', [
+    'indexedDB',
     'ngCookies',
     'ngMessages',
     'ngResource',
@@ -19,8 +20,38 @@ angular
     'use strict';
     ServiceWorker.init();
 })
-.config(function ($routeProvider, $mdThemingProvider) {
+.config(function ($routeProvider, $mdThemingProvider, $indexedDBProvider) {
     'use strict';
+
+    $indexedDBProvider
+        .connection('pubTransAppDb')
+        .upgradeDatabase(1, function(event, db){
+            db.createObjectStore('operators', {keyPath: 'Id'});
+        })
+        .upgradeDatabase(2, function(event, db){
+            db.deleteObjectStore("operators");
+            db.createObjectStore('operators', {keyPath: 'Id'});
+        })
+        .upgradeDatabase(3, function(event, db){
+            var objStore = db.createObjectStore('operator_stops', {keyPath: 'id'});
+            objStore.createIndex('operator_idx', 'operator_id', {unique: false});
+        })
+        .upgradeDatabase(4, function(event, db){
+            var objStore = db.createObjectStore('operator_stop_times', {keyPath: 'id'});
+            objStore.createIndex('operator_idx', 'operator_id', {unique: false});
+            objStore.createIndex('trip_idx', 'trip_id', {unique: false});
+            objStore.createIndex('stop_idx', 'stop_id', {unique: false});
+        })
+        .upgradeDatabase(5, function(event, db){
+            var objStore = db.createObjectStore('operator_routes', {keyPath: 'id'});
+            objStore.createIndex('operator_idx', 'agency_id', {unique: false});
+        })
+        .upgradeDatabase(6, function(event, db){
+            var objStore = db.createObjectStore('operator_trips', {keyPath: 'id'});
+            objStore.createIndex('operator_idx', 'operator_id', {unique: false});
+            objStore.createIndex('trip_idx', 'trip_id', {unique: false});
+            objStore.createIndex('route_idx', 'route_id', {unique: false});
+        });
 
     $mdThemingProvider.theme('default');
 

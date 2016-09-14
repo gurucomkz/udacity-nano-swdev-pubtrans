@@ -10,7 +10,8 @@
 angular.module('pubTransApp')
 .service('GtfsUtils', [
     '$http',
-function ($http) {
+    'GtfsDB',
+function ($http, GtfsDB) {
     var me = this;
 
     var urlOperators = 'http://localhost:9001/gtfs/carriers.json';
@@ -50,17 +51,23 @@ function ($http) {
 
     this.fetchOperators = function () {
         return new Promise(function(resolve, reject) {
-            $http.get(urlOperators)
-                .then(function(response){
-                    var opers = response.data.map(function(oper){
-                        return {
-                            Name: oper.CarrierName,
-                            Id: oper.CarrierID,
-                            RemoteId: oper.RemoteId
-                        };
-                    });
-                    resolve(opers);
-                }, reject);
+            GtfsDB.getOperators()
+            .then(resolve)
+            .catch(function() {
+                console.log('fetching operators from network');
+                $http.get(urlOperators)
+                    .then(function(response){
+                        var opers = response.data.map(function(oper){
+                            return {
+                                Name: oper.CarrierName,
+                                Id: oper.CarrierID,
+                                RemoteId: oper.RemoteId
+                            };
+                        });
+                        GtfsDB.saveOperators(opers);
+                        resolve(opers);
+                    }, reject);
+                });
         });
     };
 

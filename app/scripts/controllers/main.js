@@ -116,7 +116,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     }, 1000);
 
     $scope.$watch('timeInCA',function(newVal) {
-        if($scope.formHidden && $scope.routeMinTime < newVal){
+        if(newVal && $scope.formHidden && $scope.routeMinTime < thisTimeString(newVal)){
             console.log('Recalculating...');
             $scope.stationsReady();
         }
