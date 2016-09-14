@@ -82,7 +82,13 @@ function ($http, GtfsDB) {
 
     //transformators
 
+    var connCache = {};
     this.hasConnection = function(stoptimesByTrip, id1, id2, all){
+        if(!stoptimesByTrip) return false;
+        var connCacheKey = [id1, id2, all?1:0].join('-');
+        if(connCacheKey in connCache){
+            return connCache[connCacheKey];
+        }
         var connection = all ? [] : false;
         var _find = function(trip,id){
             return trip.filter(function(stop) {
@@ -115,6 +121,7 @@ function ($http, GtfsDB) {
                 }
             }
         });
+        connCache[connCacheKey] = connection;
         return connection;
     };
 
