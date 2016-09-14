@@ -16,6 +16,8 @@ angular.module('pubTransApp')
 function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     'use strict';
 
+    var CA_TIME_OFFSET = -7;
+
     $scope.operator = AppSettings.val('lastOperator');
 
     $scope.allStations = null;
@@ -34,7 +36,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     $scope.toggleTTsize = function() {
         $scope.allTimesExpanded = !$scope.allTimesExpanded;
         $scope.ttSize = $scope.allTimesExpanded?1000:20;
-    }
+    };
     //$scope.formHidden = false;
 
     $scope.toggleForm = function(){
@@ -108,11 +110,17 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     $scope.timeInCA = null;
 
     $interval(function(){
-        var offset = -7;
         var d = new Date();
         var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-        $scope.timeInCA = new Date(utc + (3600000*offset));
+        $scope.timeInCA = new Date(utc + (3600000 * CA_TIME_OFFSET));
     }, 1000);
+
+    $scope.$watch('timeInCA',function(newVal) {
+        if($scope.formHidden && $scope.routeMinTime < newVal){
+            console.log('Recalculating...');
+            $scope.stationsReady();
+        }
+    });
     /*
         provide object for each route
 
@@ -125,6 +133,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
             console.log('not ready yet');
             return;
         }
+        $scope.routeMinTime = '30:00';
         var routesBetween = [];
         var connectingTrips = hasConnection(a, b, true);
         var connectingRoutes = getRoutesForTrips(connectingTrips);
@@ -194,6 +203,11 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
                     return ta===tb? 0 : (ta>tb?1:-1);
                 });
             });
+
+            if(rData.stopTimes[a][0] < $scope.routeMinTime){
+                $scope.routeMinTime = rData.stopTimes[a][0];
+            }
+
             routesBetween.push(rData);
         });
 
