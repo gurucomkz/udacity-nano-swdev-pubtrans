@@ -35,10 +35,27 @@ function ($http, GtfsDB) {
     };
 
     this.fetchOperatorStops = function(operId) {
-        return $http.get(urlOperatorStops.replace('{}',operId))
-                .then(responseParseCSV)
-                .then(makeFiller({'operator_id': operId}))
-                .then(makeKeymaker('id'));
+
+        var keymaker = makeKeymaker('id'),
+            filler = makeFiller({'operator_id': operId});
+
+        return new Promise(function(resolve, reject) {
+            GtfsDB.getStops(operId)
+                .catch(function() {
+                    return $http.get(urlOperatorStops.replace('{}',operId))
+                                .then(responseParseCSV)
+                                .then(filler)
+                                .then(function(d) {
+                                    return GtfsDB.saveStops(operId, d);
+                                })
+                                .then(keymaker)
+                                .then(resolve)
+                                .catch(reject);
+                })
+                .then(keymaker)
+                .then(resolve)
+                .catch(reject);
+        });
     };
 
     this.fetchStopTimes = function(operId){
