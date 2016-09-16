@@ -17,7 +17,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     'use strict';
 
 
-
+    $scope.operatorReady = false;
     $scope.operator = AppSettings.val('lastOperator');
 
     $scope.allStations = null;
@@ -130,7 +130,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
 
         connectingTrips = connectingTrips.filter(function(tripId) {
             return !!$scope.stoptimesByTrip[tripId].find(function(stop) {
-                return stop.stop_id === a && stop.arrival_time >= thisTimeFull;
+                return stop.stopId === a && stop.arrivalTime >= thisTimeFull;
             });
         });
 
@@ -150,7 +150,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
             angular.forEach(tripIds, function(tripId) {
                 var stopTimes = $scope.stoptimesByTrip[tripId],
                     stopSequence = GtfsUtils.getTripStopSequence(stopTimes, a, b),
-                    scK = stopSequence.map(function(s) { return s.stop_id; }).join('-');
+                    scK = stopSequence.map(function(s) { return s.stopId; }).join('-');
 
                 if(!stopSequence.length){ return; }
                 var duration = GtfsUtils.getSequenceDuration(stopSequence);
@@ -168,17 +168,17 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
                 };
 
                 angular.forEach(stopSequence, function (stopEntry) {
-                    var arrivalTime = GtfsUtils.stripSeconds(stopEntry.arrival_time);
+                    var arrivalTime = GtfsUtils.stripSeconds(stopEntry.arrivalTime);
 
-                    rData.tripStops[tripId][arrivalTime] = stopEntry.stop_id;
+                    rData.tripStops[tripId][arrivalTime] = stopEntry.stopId;
 
-                    if(!(stopEntry.stop_id in rData.stopTimesRoutes)){
-                        rData.stopTimesRoutes[stopEntry.stop_id] = {};
+                    if(!(stopEntry.stopId in rData.stopTimesRoutes)){
+                        rData.stopTimesRoutes[stopEntry.stopId] = {};
                     }
-                    if(!rData.stopTimesRoutes[stopEntry.stop_id][arrivalTime]){
-                        rData.stopTimesRoutes[stopEntry.stop_id][arrivalTime] = [];
+                    if(!rData.stopTimesRoutes[stopEntry.stopId][arrivalTime]){
+                        rData.stopTimesRoutes[stopEntry.stopId][arrivalTime] = [];
                     }
-                    rData.stopTimesRoutes[stopEntry.stop_id][arrivalTime].push(tripId);
+                    rData.stopTimesRoutes[stopEntry.stopId][arrivalTime].push(tripId);
 
                 });
             });
@@ -212,7 +212,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
         var routeIds = {};
 
         tripIds.forEach(function(tripId) {
-            var routeId = $scope.allTrips[tripId].route_id;
+            var routeId = $scope.allTrips[tripId].routeId;
 
             if(!(routeId in routeIds)){
                 routeIds[routeId] = [];

@@ -21,15 +21,6 @@
 		});
 	}
 
-	// function regFonts(){
-	// 	return caches.open(fontsCacheName).then(function(cache) {
-	// 		return cache.addAll([
-	// 			'https://fonts.gstatic.com/s/roboto/v15/2UX7WLTfW3W8TclTUvlFyQ.woff',
-	// 			'https://fonts.gstatic.com/s/roboto/v15/d-6IYplOFocCacKzxwXSOD8E0i7KZn-EPnyo3HZu7kw.woff'
-	// 		]);
-	// 	});
-	// }
-
 	function serveApi(request) {
 		return caches.open(apiCacheName).then(function(cache) {
 			return cache.match(request).then(function(response) {
@@ -63,7 +54,6 @@
 	self.addEventListener('install', function(event) {
 		// event.waitUntil(
 		// 	regCaches()
-		// 	//.then(regFonts())
 		// );
 	});
 

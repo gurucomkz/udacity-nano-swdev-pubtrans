@@ -41,11 +41,11 @@ function ($indexedDB) {
 
     this.getRoutes = function(operId) {
         return new Promise(function(resolve, reject) {
-            //console.log('looking operators in db');
+            //console.log('looking operator_routes in db');
             $indexedDB.openStore('operator_routes', function(store){
                 var find = store.query()
                                 .$eq(operId)
-                                .$index("operator_idx");
+                                .$index('operator_idx');
 
                 store.eachWhere(find).then(function(data) {
                 //    console.log('routes in db', data);
@@ -76,7 +76,7 @@ function ($indexedDB) {
             $indexedDB.openStore('operator_trips', function(store){
                 var find = store.query()
                                 .$eq(operId)
-                                .$index("operator_idx");
+                                .$index('operator_idx');
 
                 store.eachWhere(find).then(function(data) {
                 //    console.log('trips in db', data);
@@ -96,7 +96,7 @@ function ($indexedDB) {
         return new Promise(function(resolve, reject) {
             $indexedDB.openStore('operator_trips', function(store){
                 angular.forEach(data, function(entry) {
-                    entry.id = [entry.route_id, entry.service_id, entry.trip_id, entry.block_id].join('-');
+                    entry.id = [entry.routeId, entry.serviceId, entry.tripId, entry.blockId].join('-');
                 });
                 store.insert(data);
                 resolve(data);
@@ -114,7 +114,7 @@ function ($indexedDB) {
             $indexedDB.openStore('operator_stops', function(store){
                 var find = store.query()
                                 .$eq(operId)
-                                .$index("operator_idx");
+                                .$index('operator_idx');
 
                 store.eachWhere(find).then(function(data) {
                     //console.log('stops in db', data);
@@ -148,7 +148,7 @@ function ($indexedDB) {
             $indexedDB.openStore('operator_stop_times', function(store){
                 var find = store.query()
                                 .$eq(operId)
-                                .$index("operator_idx");
+                                .$index('operator_idx');
 
                 store.eachWhere(find).then(function(data) {
                 //    console.log('stop times in db', data);
@@ -167,7 +167,7 @@ function ($indexedDB) {
         return new Promise(function(resolve) {
             $indexedDB.openStore('operator_stop_times', function(store){
                 angular.forEach(data, function(entry) {
-                    entry.id = [entry.trip_id, entry.stop_id, entry.stop_sequence].join('-');
+                    entry.id = [entry.tripId, entry.stopId, entry.stopSequence].join('-');
                 });
                 store.insert(data);
                 resolve(data);

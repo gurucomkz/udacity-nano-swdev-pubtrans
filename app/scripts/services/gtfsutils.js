@@ -56,8 +56,8 @@ function ($http, GtfsDB) {
     };
 
     this.fetchOperatorTrips = function(operId) {
-        var keymaker = makeKeymaker('trip_id'),
-            filler = makeFiller({'operator_id': operId});
+        var keymaker = makeKeymaker('tripId'),
+            filler = makeFiller({'operatorId': operId});
 
         return new Promise(function(resolve, reject) {
             GtfsDB.getTrips(operId)
@@ -77,14 +77,14 @@ function ($http, GtfsDB) {
     };
 
     this.groupTripsByRoute = function(list) {
-        var grouper = makeGrouper('route_id');
+        var grouper = makeGrouper('routeId');
         return grouper(list);
     };
 
     this.fetchOperatorStops = function(operId) {
 
         var keymaker = makeKeymaker('id'),
-            filler = makeFiller({'operator_id': operId});
+            filler = makeFiller({'operatorId': operId});
 
         return new Promise(function(resolve, reject) {
             GtfsDB.getStops(operId)
@@ -104,9 +104,9 @@ function ($http, GtfsDB) {
     };
 
     this.fetchStopTimes = function(operId){
-        var arrivalTimeProcessor = makeTimeProcessor('arrival_time', 'time'),
-            grouper = makeGrouper('trip_id'),
-            filler = makeFiller({'operator_id': operId});
+        var arrivalTimeProcessor = makeTimeProcessor('arrivalTime', 'time'),
+            grouper = makeGrouper('tripId'),
+            filler = makeFiller({'operatorId': operId});
 
         return new Promise(function(resolve, reject) {
             GtfsDB.getStopTimes(operId)
@@ -162,7 +162,7 @@ function ($http, GtfsDB) {
         var start = sequence[0],
             stop = sequence[sequence.length-1];
 
-        return Math.abs(start.time - stop.time)/1000/60;
+        return Math.ceil(Math.abs(start.time - stop.time)/1000/60);
     };
 
     this.getTripStopSequence = function(list, start, stop) {
@@ -171,14 +171,14 @@ function ($http, GtfsDB) {
         var thisTime = this.stripSeconds(this.thisTimeString());
 
         angular.forEach(list, function (stopEntry) {
-            var arrivalTime = me.stripSeconds(stopEntry.arrival_time);
+            var arrivalTime = me.stripSeconds(stopEntry.arrivalTime);
 
-            if((startFound || !startFound && stopEntry.stop_id === start && arrivalTime >= thisTime) && !stopFound){
+            if((startFound || !startFound && stopEntry.stopId === start && arrivalTime >= thisTime) && !stopFound){
                 startFound = true;
 
                 stopSequenceTpl.push(stopEntry);
 
-                if(stopEntry.stop_id === stop){
+                if(stopEntry.stopId === stop){
                     stopFound = true;
                     return false;
                 }
@@ -201,29 +201,15 @@ function ($http, GtfsDB) {
         var connection = all ? [] : false;
         var _find = function(trip,id){
             return trip.filter(function(stop) {
-                return stop.stop_id === id;
+                return stop.stopId === id;
             }).length;
         };
-        // var _getSeqId = function(trip, stopId){
-        //     var entry = trip.find(function(stopEntry) {
-        //         return stopEntry.stop_id == stopId;
-        //     });
-        //     return entry ? entry.stop_sequence : undefined;
-        // };
 
-        // var _getAllSeqId = function(trip, stopId){
-        //     var entries = trip.filter(function(stopEntry) {
-        //         return stopEntry.stop_id == stopId;
-        //     });
-        //     return entries.map(function(stopEntry) {
-        //         return stopEntry.stop_sequence;
-        //     });
-        // };
-        angular.forEach(stoptimesByTrip, function(tripData, trip_id){
+        angular.forEach(stoptimesByTrip, function(tripData, tripId){
             if(_find(tripData,id1) && _find(tripData,id2)){
             //    console.log(['found both '+id1+' and '+ id2+' in trip='+trip_id, _getAllSeqId(tripData,id1), _getAllSeqId(tripData,id2)]);
                 if(all){
-                    connection.push(trip_id);
+                    connection.push(tripId);
                 }else{
                     connection = true;
                     return false;
@@ -260,6 +246,24 @@ function ($http, GtfsDB) {
                 }));
             });
         };
+    };
+
+    var camelizer = function(dataArray){
+        return new Promise(function(resolve) {
+            resolve(dataArray.map(function(entry) {
+                var newEntry = {};
+                angular.forEach(entry, function(v, k){
+                    var nk = k.toLowerCase()
+                                .split('_')
+                                .map(function(p, pidx){
+                                    return pidx ? p.substring(0,1).toUpperCase() + p.substring(1) : p;
+                                })
+                                .join('');
+                    newEntry[nk] = v;
+                });
+                return newEntry;
+            }));
+        });
     };
 
     var makeKeymaker = function(keyField){
@@ -347,6 +351,6 @@ function ($http, GtfsDB) {
             }
             ret.push(entry);
         }
-        return ret;
+        return camelizer(ret);
     };
 }]);

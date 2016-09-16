@@ -29,7 +29,7 @@ angular
             db.createObjectStore('operators', {keyPath: 'Id'});
         })
         .upgradeDatabase(2, function(event, db){
-            db.deleteObjectStore("operators");
+            db.deleteObjectStore('operators');
             db.createObjectStore('operators', {keyPath: 'Id'});
         })
         .upgradeDatabase(3, function(event, db){
@@ -51,6 +51,35 @@ angular
             objStore.createIndex('operator_idx', 'operator_id', {unique: false});
             objStore.createIndex('trip_idx', 'trip_id', {unique: false});
             objStore.createIndex('route_idx', 'route_id', {unique: false});
+        })
+        .upgradeDatabase(7, function(event, db){
+            db.deleteObjectStore('operator_stops');
+            db.deleteObjectStore('operator_stop_times');
+            db.deleteObjectStore('operator_routes');
+            db.deleteObjectStore('operator_trips');
+        })
+        .upgradeDatabase(8, function(event, db){
+            var objStore;
+
+            objStore = db.createObjectStore('operator_stops', {keyPath: 'id'});
+            objStore.createIndex('operator_idx', 'operatorId', {unique: false});
+
+            objStore = db.createObjectStore('operator_stop_times', {keyPath: 'id'});
+            objStore.createIndex('operator_idx', 'operatorId', {unique: false});
+            objStore.createIndex('trip_idx', 'tripId', {unique: false});
+            objStore.createIndex('stop_idx', 'stopId', {unique: false});
+
+            objStore = db.createObjectStore('operator_routes', {keyPath: 'id'});
+            objStore.createIndex('operator_idx', 'agencyId', {unique: false});
+
+            objStore = db.createObjectStore('operator_trips', {keyPath: 'id'});
+            objStore.createIndex('operator_idx', 'operatorId', {unique: false});
+            objStore.createIndex('trip_idx', 'tripId', {unique: false});
+            objStore.createIndex('route_idx', 'routeId', {unique: false});
+        })
+        .upgradeDatabase(9, function(event, db){
+            db.deleteObjectStore('operators');
+            db.createObjectStore('operators', {keyPath: 'Id'});
         });
 
     $mdThemingProvider.theme('default');

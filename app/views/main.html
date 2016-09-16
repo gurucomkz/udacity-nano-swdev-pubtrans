@@ -119,7 +119,7 @@
 
     <md-tabs ng-if="routes" flex>
         <md-tab ng-repeat="route in routes"
-              label="Line: {{route.short_name}}{{route.long_name ? ' ('+route.long_name+')':'' }}">
+              label="Line: {{route.shortName}}{{route.longName ? ' ('+route.longName+')':'' }}">
               <div ng-if="routes" layout="row" layout-padding>
                   <span>Time in CA:</span>
                   <span><b>{{timeInCA|date:"HH:mm:ss"}}</b></span>
@@ -174,10 +174,10 @@
                             class="md-2-line"
                             ng-repeat="sequence in route.stopSequence">
                             <div class="md-list-item-text" flex layout="column">
-                                <h3>{{sequence.entries.length}} stops. Duration: {{sequence.duration}} min.</h3>
+                                <h3>{{sequence.entries.length-1}} stops. Duration: {{sequence.duration}} min.</h3>
                                 <p>
                                     <span ng-repeat="stopTime in sequence.entries">
-                                        <b>{{allStationsWKeys[stopTime.stop_id].name}}</b>
+                                        <b>{{allStationsWKeys[stopTime.stopId].name}}</b>
                                         <span ng-if="!$last">⇒</span>
                                     </span>
                                 </p>
