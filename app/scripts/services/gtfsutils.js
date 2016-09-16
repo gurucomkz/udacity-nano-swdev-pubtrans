@@ -14,6 +14,23 @@ angular.module('pubTransApp')
 function ($http, GtfsDB) {
     var me = this;
 
+    var CA_TIME_OFFSET = -7;
+
+    this.thisTimeString = function(d){
+        if(!d){ d = this.getCATime(); }
+        return [d.getHours(),d.getMinutes()+1,d.getSeconds()].map(function(p){return p > 9 ? p : '0'+p;}).join(':');
+    };
+
+    this.stripSeconds = function(t){
+        return t.replace(/:\d+$/,'');
+    };
+
+    this.getCATime = function() {
+        var d = new Date();
+        var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+        return new Date(utc + (3600000 * CA_TIME_OFFSET));
+    };
+
     var urlOperators = 'http://localhost:9001/gtfs/carriers.json';
     var urlOperatorRoutes = 'http://localhost:9001/gtfs/{}/routes.txt';
     var urlOperatorStops = 'http://localhost:9001/gtfs/{}/stops.txt';
@@ -39,9 +56,29 @@ function ($http, GtfsDB) {
     };
 
     this.fetchOperatorTrips = function(operId) {
-        return $http.get(urlOperatorTrips.replace('{}',operId))
-                .then(responseParseCSV)
-                .then(makeGrouper('route_id'));
+        var keymaker = makeKeymaker('trip_id'),
+            filler = makeFiller({'operator_id': operId});
+
+        return new Promise(function(resolve, reject) {
+            GtfsDB.getTrips(operId)
+                .catch(function() {
+                    return $http.get(urlOperatorTrips.replace('{}',operId))
+                            .then(responseParseCSV)
+                            .then(filler)
+                            .then(function(d) {
+                                return GtfsDB.saveTrips(operId, d);
+                            })
+                            .catch(reject);
+                })
+                .then(keymaker)
+                .then(resolve)
+                .catch(reject);
+        });
+    };
+
+    this.groupTripsByRoute = function(list) {
+        var grouper = makeGrouper('route_id');
+        return grouper(list);
     };
 
     this.fetchOperatorStops = function(operId) {
@@ -58,8 +95,6 @@ function ($http, GtfsDB) {
                                 .then(function(d) {
                                     return GtfsDB.saveStops(operId, d);
                                 })
-                                .then(keymaker)
-                                .then(resolve)
                                 .catch(reject);
                 })
                 .then(keymaker)
@@ -69,11 +104,26 @@ function ($http, GtfsDB) {
     };
 
     this.fetchStopTimes = function(operId){
-        return $http.get(urlOperatorStopsTimes.replace('{}',operId))
-                .then(responseParseCSV)
-                .then(makeTimeProcessor('arrival_time', 'time'))
-                //.then(makeTimeProcessor('departure_time'))
-                .then(makeGrouper('trip_id'));
+        var arrivalTimeProcessor = makeTimeProcessor('arrival_time', 'time'),
+            grouper = makeGrouper('trip_id'),
+            filler = makeFiller({'operator_id': operId});
+
+        return new Promise(function(resolve, reject) {
+            GtfsDB.getStopTimes(operId)
+                .catch(function() {
+                    return $http.get(urlOperatorStopsTimes.replace('{}',operId))
+                                .then(responseParseCSV)
+                                .then(filler)
+                                .then(arrivalTimeProcessor)
+                                .then(function(d) {
+                                    return GtfsDB.saveStopTimes(operId, d);
+                                })
+                                .catch(reject);
+                })
+                .then(grouper)
+                .then(resolve)
+                .catch(reject);
+        });
     };
 
     this.fetchOperators = function () {
@@ -107,11 +157,43 @@ function ($http, GtfsDB) {
         });
     };
 
+
+    this.getSequenceDuration = function(sequence) {
+        var start = sequence[0],
+            stop = sequence[sequence.length-1];
+
+        return Math.abs(start.time - stop.time)/1000/60;
+    };
+
+    this.getTripStopSequence = function(list, start, stop) {
+        var stopSequenceTpl = [];
+        var startFound = false, stopFound = false;
+        var thisTime = this.stripSeconds(this.thisTimeString());
+
+        angular.forEach(list, function (stopEntry) {
+            var arrivalTime = me.stripSeconds(stopEntry.arrival_time);
+
+            if((startFound || !startFound && stopEntry.stop_id === start && arrivalTime >= thisTime) && !stopFound){
+                startFound = true;
+
+                stopSequenceTpl.push(stopEntry);
+
+                if(stopEntry.stop_id === stop){
+                    stopFound = true;
+                    return false;
+                }
+            }
+        });
+        if(!stopFound){
+            return [];
+        }
+        return stopSequenceTpl;
+    };
     //transformators
 
     var connCache = {};
     this.hasConnection = function(stoptimesByTrip, id1, id2, all){
-        if(!stoptimesByTrip) return false;
+        if(!stoptimesByTrip) {return false;}
         var connCacheKey = [id1, id2, all?1:0].join('-');
         if(connCacheKey in connCache){
             return connCache[connCacheKey];
@@ -141,7 +223,7 @@ function ($http, GtfsDB) {
             if(_find(tripData,id1) && _find(tripData,id2)){
             //    console.log(['found both '+id1+' and '+ id2+' in trip='+trip_id, _getAllSeqId(tripData,id1), _getAllSeqId(tripData,id2)]);
                 if(all){
-                    connection.push(parseInt(trip_id));
+                    connection.push(trip_id);
                 }else{
                     connection = true;
                     return false;
@@ -184,7 +266,7 @@ function ($http, GtfsDB) {
         return function(dataArray){
             return new Promise(function(resolve) {
                 var outObj = {};
-                dataArray.forEach(function(dataEntry) {
+                angular.forEach(dataArray,function(dataEntry) {
                     outObj[dataEntry[keyField]] = dataEntry;
                 });
                 resolve(outObj);
@@ -196,7 +278,7 @@ function ($http, GtfsDB) {
         return function(dataArray){
             return new Promise(function(resolve) {
                 var outObj = {};
-                dataArray.forEach(function(dataEntry) {
+                angular.forEach(dataArray, function(dataEntry) {
                     if(!(dataEntry[keyField] in outObj)){
                         outObj[dataEntry[keyField]] = [];
                     }
@@ -247,10 +329,13 @@ function ($http, GtfsDB) {
         }
 
         //lines
-        for(var line = 1; line < exploded.length-1; line++)
+        for(var line = 1; line < exploded.length; line++)
         {
             var lineExploded = exploded[line].split(','),
                 entry = {};
+            if(lineExploded.length < keys.length){
+                continue;
+            }
             for(var ki=0; ki < keys.length; ki++){
                 var key = keys[ki],
                     strVal = lineExploded[ki].replace(/^\"/,'').replace(/\"$/,'');

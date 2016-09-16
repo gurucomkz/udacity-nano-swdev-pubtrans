@@ -1,4 +1,4 @@
-<md-toolbar ng-show="formHidden" layout="row" class="md-hue-1">
+<md-toolbar ng-show="formHidden && operatorReady" layout="row" class="md-hue-1">
     <div class="md-toolbar-tools">
         <h3 class="subheader-text">
             <span>{{travelStart.name}} ⇒ {{travelEnd.name}}</span>
@@ -10,7 +10,7 @@
     </div>
 </md-toolbar>
 <div layout="column" flex>
-    <md-whiteframe class="md-whiteframe-1dp" layout="column" layout-padding ng-show="!formHidden">
+    <md-whiteframe class="md-whiteframe-1dp" layout="column" layout-padding ng-show="!formHidden || !operatorReady">
         <form>
             <div class="container" ng-if="!allOperators">
                 <br />
@@ -20,7 +20,7 @@
                 </div>
             </div>
 
-            <div class="container" >
+            <div class="container" ng-if="allOperators">
 
                 <label>Operator</label>
                 <md-autocomplete
@@ -43,15 +43,21 @@
                 </md-autocomplete>
 
 
-                <div class="container" ng-if="operator.Name && !allStations && !allLines.length">
+                <div class="container" ng-if="operator.Name && !operatorReady">
                     <br />
                     <md-progress-linear mode="indeterminate"></md-progress-linear>
-                    <div class="bottom-block">
-                        <span>Loading operator's stations &amp; lines...</span>
+                    <div class="bottom-block" layout="column">
+                        <h4>Loading operator's data:</h4>
+                        <span ng-if="!allLines">Lines...</span>
+                        <span ng-if="!allStations">Stations...</span>
+                        <span ng-if="!allRoutes">Routes...</span>
+                        <span ng-if="!stoptimesByTrip">Stop times...</span>
+                        <span ng-if="!tripsByRoute">Trips...</span>
+
                     </div>
                 </div>
 
-                <div ng-if="operator && allStations">
+                <div ng-if="operator && operatorReady">
                     <br />
                     <label>Origin</label>
                     <md-autocomplete
@@ -159,7 +165,7 @@
             <md-card>
                 <md-card-title>
                     <md-card-title-text>
-                        <span class="md-headline">Route</span>
+                        <span class="md-headline">Route variants</span>
                     </md-card-title-text>
                 </md-card-title>
                 <md-card-content>
@@ -167,12 +173,15 @@
                         <md-divider ></md-divider>
                         <md-list-item data-stop-id="stopId"
                             class="md-2-line"
-                            ng-repeat="stopId in route.stopSequence">
+                            ng-repeat="sequence in route.stopSequence">
                             <div class="md-list-item-text" flex layout="column">
-                                <h3>{{ allStationsWKeys[stopId].name }}</h3>
-                                <p ng-if="$first">Origin</p>
-                                <p ng-if="!$first && !$last">Intermediate stop #{{$index}}</p>
-                                <p ng-if="$last">Destination</p>
+                                <h3>{{sequence.entries.length}} stops. Duration: {{sequence.duration}} min.</h3>
+                                <p>
+                                    <span ng-repeat="stopTime in sequence.entries">
+                                        <b>{{allStationsWKeys[stopTime.stop_id].name}}</b>
+                                        <span ng-if="!$last">⇒</span>
+                                    </span>
+                                </p>
                             </div>
                             <md-divider ></md-divider>
                         </md-list-item>

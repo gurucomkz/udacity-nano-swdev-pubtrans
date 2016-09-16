@@ -71,7 +71,8 @@ function(req, res, next){
             var feed = GtfsRealtimeBindings.FeedMessage.decode(body),
                 respObject = {
                     agency: agency,
-                    updates: []
+                    updates: [],
+                    source: feed
                 };
             feed.entity.forEach(function(entity) {
                 if (entity.trip_update) {

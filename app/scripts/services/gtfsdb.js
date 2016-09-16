@@ -48,7 +48,7 @@ function ($indexedDB) {
                                 .$index("operator_idx");
 
                 store.eachWhere(find).then(function(data) {
-                    console.log('routes in db', data);
+                //    console.log('routes in db', data);
                     if(data && data.length){
                         resolve(data);
                     }else{
@@ -79,7 +79,7 @@ function ($indexedDB) {
                                 .$index("operator_idx");
 
                 store.eachWhere(find).then(function(data) {
-                    console.log('trips in db', data);
+                //    console.log('trips in db', data);
                     if(data && data.length){
                         resolve(data);
                     }else{
@@ -108,6 +108,8 @@ function ($indexedDB) {
 
     this.getStops = function(operId) {
         return new Promise(function(resolve, reject) {
+            reject();
+            return;
             //console.log('looking stops in db for', operId);
             $indexedDB.openStore('operator_stops', function(store){
                 var find = store.query()
@@ -129,24 +131,27 @@ function ($indexedDB) {
     };
 
     this.saveStops = function(operId, data) {
-        return new Promise(function(resolve) {
+        return new Promise(function(resolve, reject) {
             $indexedDB.openStore('operator_stops', function(store){
                 store.insert(data);
                 resolve(data);
-            });
+            })
+            .catch(reject);
         });
     };
 
     this.getStopTimes = function(operId) {
         return new Promise(function(resolve, reject) {
-            console.log('looking stop times in db for', operId);
+            reject();
+            return;
+            //console.log('looking stop times in db for', operId);
             $indexedDB.openStore('operator_stop_times', function(store){
                 var find = store.query()
                                 .$eq(operId)
                                 .$index("operator_idx");
 
                 store.eachWhere(find).then(function(data) {
-                    console.log('stop times in db', data);
+                //    console.log('stop times in db', data);
                     if(data && data.length){
                         resolve(data);
                     }else{

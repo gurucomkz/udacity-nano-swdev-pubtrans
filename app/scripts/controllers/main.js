@@ -16,7 +16,7 @@ angular.module('pubTransApp')
 function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     'use strict';
 
-    var CA_TIME_OFFSET = -7;
+
 
     $scope.operator = AppSettings.val('lastOperator');
 
@@ -57,7 +57,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     var stopForecatsFetching = function() {
         $scope.forecasts = {};
         if(forecastTimer){
-            forecastTimer();
+            $timeout.cancel(forecastTimer);
             forecastTimer = null;
         }
     };
@@ -98,25 +98,14 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
         });
     };
 
-    var thisTimeString = function(d){
-        if(!d){ d = new Date($scope.timeInCA); }
-        return [d.getHours(),d.getMinutes()+1,d.getSeconds()].map(function(p){return p > 9 ? p : '0'+p;}).join(':');
-    };
-
-    var stripSeconds = function(t){
-        return t.replace(/:\d+$/,'');
-    };
-
     $scope.timeInCA = null;
 
     $interval(function(){
-        var d = new Date();
-        var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-        $scope.timeInCA = new Date(utc + (3600000 * CA_TIME_OFFSET));
+        $scope.timeInCA = GtfsUtils.getCATime();
     }, 1000);
 
     $scope.$watch('timeInCA',function(newVal) {
-        if(newVal && $scope.formHidden && $scope.routeMinTime < thisTimeString(newVal)){
+        if(newVal && $scope.formHidden && $scope.routeMinTime < GtfsUtils.thisTimeString(newVal)){
             console.log('Recalculating...');
             $scope.stationsReady();
         }
@@ -130,18 +119,23 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     */
     var getRoutesBetween = function(a, b) {
         if(!$scope.tripsByRoute || !$scope.allRoutes){
-            console.log('not ready yet');
+            //console.log('not ready yet');
             return;
         }
         $scope.routeMinTime = '30:00';
         var routesBetween = [];
         var connectingTrips = hasConnection(a, b, true);
-        var connectingRoutes = getRoutesForTrips(connectingTrips);
-        console.log(['trips connecting', connectingTrips]);
-        console.log(['routes connecting', connectingRoutes]);
-        routesBetween = [];
 
-        var thisTime = stripSeconds(thisTimeString());
+        //exclude trips which don't start @ a after this time
+        var thisTimeFull = GtfsUtils.thisTimeString();
+
+        connectingTrips = connectingTrips.filter(function(tripId) {
+            return !!$scope.stoptimesByTrip[tripId].find(function(stop) {
+                return stop.stop_id === a && stop.arrival_time >= thisTimeFull;
+            });
+        });
+
+        var connectingRoutes = getRoutesForTrips(connectingTrips);
 
         angular.forEach(connectingRoutes, function(tripIds, routeId) {
             var rData = $scope.allRoutes[routeId];
@@ -150,52 +144,44 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
             rData.tripIds = [];
             rData.stopTimes = {};
             rData.stopTimesRoutes = {};
-            rData.stopSequence = null;
-            rData.stopSequenceByTrip = {};
+            rData.stopSequence = {};
+
+            rData.tripDetails = {};
 
             angular.forEach(tripIds, function(tripId) {
-                var path = {}, started = false, stopSequenceTpl = [];
-                angular.forEach($scope.stoptimesByTrip[tripId], function (stopEntry) {
-                    if(!started && stopEntry.stop_id === b){
-                        //looks like reverse trip. swapping
-                        var c = b; b = a; a = c;
+                var stopTimes = $scope.stoptimesByTrip[tripId],
+                    stopSequence = GtfsUtils.getTripStopSequence(stopTimes, a, b),
+                    scK = stopSequence.map(function(s) { return s.stop_id; }).join('-');
+
+                if(!stopSequence.length){ return; }
+                var duration = GtfsUtils.getSequenceDuration(stopSequence);
+
+                rData.tripIds.push(tripId);
+                rData.tripStops[tripId] = {};
+                rData.stopSequence[scK] = {
+                    entries: stopSequence,
+                    duration: duration
+                };
+
+                rData.tripDetails[tripId] = {
+                    stopSequenceKey: scK,
+                    duration: duration
+                };
+
+                angular.forEach(stopSequence, function (stopEntry) {
+                    var arrivalTime = GtfsUtils.stripSeconds(stopEntry.arrival_time);
+
+                    rData.tripStops[tripId][arrivalTime] = stopEntry.stop_id;
+
+                    if(!(stopEntry.stop_id in rData.stopTimesRoutes)){
+                        rData.stopTimesRoutes[stopEntry.stop_id] = {};
                     }
-                    if(!started && stopEntry.stop_id === a || started){
-                        started = true;
-
-                        var arrivalTime = stripSeconds(stopEntry.arrival_time);
-                        if(arrivalTime < thisTime){
-                            return;
-                        }
-
-                        path[arrivalTime] = stopEntry.stop_id;
-
-                        if(!(stopEntry.stop_id in rData.stopTimesRoutes)){
-                            rData.stopTimesRoutes[stopEntry.stop_id] = {};
-                        }
-                        if(!rData.stopTimesRoutes[stopEntry.stop_id][arrivalTime]){
-                            rData.stopTimesRoutes[stopEntry.stop_id][arrivalTime] = [];
-                        }
-                        rData.stopTimesRoutes[stopEntry.stop_id][arrivalTime].push(tripId);
-                        if(!rData.stopSequence){
-                            stopSequenceTpl.push(stopEntry.stop_id);
-                        }
-                        if(!(tripId in rData.stopSequenceByTrip)){
-                            rData.stopSequenceByTrip[tripId] = [];
-                        }
-                        rData.stopSequenceByTrip[tripId].push(stopEntry);
-                        if(stopEntry.stop_id === b){
-                            if(!rData.stopSequence){
-                                rData.stopSequence = stopSequenceTpl;
-                            }
-                            return false;
-                        }
+                    if(!rData.stopTimesRoutes[stopEntry.stop_id][arrivalTime]){
+                        rData.stopTimesRoutes[stopEntry.stop_id][arrivalTime] = [];
                     }
+                    rData.stopTimesRoutes[stopEntry.stop_id][arrivalTime].push(tripId);
+
                 });
-                if(Object.keys(path).length){
-                    rData.tripStops[tripId] = path;
-                    rData.tripIds.push(tripId);
-                }
             });
 
             angular.forEach(rData.stopTimesRoutes, function(timearr, stopId){
@@ -204,6 +190,9 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
                 });
             });
 
+            if(!rData.stopTimes[a]){
+                //debugger;
+            }
             if(rData.stopTimes[a][0] < $scope.routeMinTime){
                 $scope.routeMinTime = rData.stopTimes[a][0];
             }
@@ -212,30 +201,24 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
         });
 
         getForecast();
-        console.log(['routes connecting Data', routesBetween]);
+        //console.log(['routes connecting Data', routesBetween]);
         return routesBetween;
     };
 
     var getRoutesForTrips = function(tripIds) {
-        if(tripIds && !(length in tripIds)){
+        if(tripIds && typeof tripIds.length === 'undefined'){
             tripIds = [tripIds];
         }
 
-        var routeIds = {},
-            allRouteIds = Object.keys($scope.tripsByRoute);
+        var routeIds = {};
 
         tripIds.forEach(function(tripId) {
-            var have = allRouteIds.find(function(routeId){
-                return !!$scope.tripsByRoute[routeId].filter(function(trip) {
-                    return trip.trip_id === tripId;
-                });
-            });
-            if(have){
-                if(!(have in routeIds)){
-                    routeIds[have] = [];
-                }
-                routeIds[have].push(tripId);
+            var routeId = $scope.allTrips[tripId].route_id;
+
+            if(!(routeId in routeIds)){
+                routeIds[routeId] = [];
             }
+            routeIds[routeId].push(tripId);
         });
 
         return routeIds;
@@ -288,16 +271,6 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
                     });
     };
 
-    $scope.fetchOperatorTrips = function() {
-        if(!$scope.operator || !$scope.operator.Id){
-            return;
-        }
-        GtfsUtils.fetchOperatorTrips($scope.operator.Id)
-            .then(function(response){
-                $scope.allTrips = response;
-            });
-    };
-
     $scope.fetchOperators = function() {
         GtfsUtils.fetchOperators()
         .then(function(operators){
@@ -320,6 +293,9 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
         $scope.allStations = null;
         $scope.allStationsWKeys = null;
         $scope.allLines = null;
+
+        $scope.operatorReady = false;
+
         if(!oldVal){
             $scope.travelStart = null;
             $scope.travelEnd = null;
@@ -331,24 +307,41 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
 
         GtfsUtils.fetchOperatorStops($scope.operator.Id)
         .then(function(stopData) {
-            console.log(['allStations', stopData]);
+            //console.log('allStations from fetchOperatorStops', stopData);
             $scope.allStationsWKeys = stopData;
             $scope.allStations = Object.keys(stopData).map(function(key){return stopData[key];});
+
+
+            console.log('calling fetchOperatorRoutes');
             return GtfsUtils.fetchOperatorRoutes($scope.operator.Id);
         })
         .then(function(routesData){
-            console.log(['allRoutes', routesData]);
+            console.log('allRoutes from fetchOperatorRoutes', routesData);
             $scope.allRoutes = routesData;
+            console.log('calling fetchStopTimes');
             return GtfsUtils.fetchStopTimes($scope.operator.Id);
         })
         .then(function(stoptimesData) {
-            console.log(['stoptimesByTrip', stoptimesData]);
+            console.log('stoptimesByTrip from fetchStopTimes', stoptimesData);
             $scope.stoptimesByTrip = stoptimesData;
+
+            console.log('calling fetchOperatorTrips');
             return GtfsUtils.fetchOperatorTrips($scope.operator.Id);
         })
         .then(function(tripData) {
-            console.log(['tripsByRoute', tripData]);
-            $scope.tripsByRoute = tripData;
+            console.log('allTrips from fetchOperatorTrips', tripData);
+            $scope.allTrips = tripData;
+
+            console.log('calling groupTripsByRoute');
+            return GtfsUtils.groupTripsByRoute(tripData);
+        })
+        .then(function(groupedTripData) {
+            console.log('tripsByRoute from groupTripsByRoute', groupedTripData);
+            $scope.tripsByRoute = groupedTripData;
+            return Promise.resolve();
+        })
+        .then(function() {
+            $scope.operatorReady = true;
             $scope.stationsReady();
         });
     });
