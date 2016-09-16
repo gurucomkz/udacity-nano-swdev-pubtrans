@@ -76,10 +76,6 @@ angular
             objStore.createIndex('operator_idx', 'operatorId', {unique: false});
             objStore.createIndex('trip_idx', 'tripId', {unique: false});
             objStore.createIndex('route_idx', 'routeId', {unique: false});
-        })
-        .upgradeDatabase(9, function(event, db){
-            db.deleteObjectStore('operators');
-            db.createObjectStore('operators', {keyPath: 'Id'});
         });
 
     $mdThemingProvider.theme('default');
