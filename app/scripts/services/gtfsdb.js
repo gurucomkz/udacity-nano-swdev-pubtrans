@@ -108,8 +108,8 @@ function ($indexedDB) {
 
     this.getStops = function(operId) {
         return new Promise(function(resolve, reject) {
-            reject();
-            return;
+            // reject();
+            // return;
             //console.log('looking stops in db for', operId);
             $indexedDB.openStore('operator_stops', function(store){
                 var find = store.query()
@@ -142,8 +142,8 @@ function ($indexedDB) {
 
     this.getStopTimes = function(operId) {
         return new Promise(function(resolve, reject) {
-            reject();
-            return;
+            // reject();
+            // return;
             //console.log('looking stop times in db for', operId);
             $indexedDB.openStore('operator_stop_times', function(store){
                 var find = store.query()

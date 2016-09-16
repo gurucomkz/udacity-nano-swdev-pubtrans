@@ -23,7 +23,6 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     $scope.allStations = null;
     $scope.allStationsWKeys = null;
     $scope.allOperators = null;
-    $scope.allLines = null;
     $scope.travelLine = AppSettings.val('lastLine');
     $scope.travelStart = AppSettings.val('lastStart');
     $scope.travelEnd = AppSettings.val('lastStop');
@@ -57,7 +56,7 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     var stopForecatsFetching = function() {
         $scope.forecasts = {};
         if(forecastTimer){
-            $timeout.cancel(forecastTimer);
+            //$timeout.cancel(forecastTimer);
             forecastTimer = null;
         }
     };
@@ -292,7 +291,10 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
         //console.log(['new operator', newVal]);
         $scope.allStations = null;
         $scope.allStationsWKeys = null;
-        $scope.allLines = null;
+        $scope.allRoutes = null;
+        $scope.stoptimesByTrip = null;
+        $scope.allTrips = null;
+        $scope.tripsByRoute = null;
 
         $scope.operatorReady = false;
 

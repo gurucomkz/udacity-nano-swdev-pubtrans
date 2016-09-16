@@ -44,17 +44,16 @@
 
 
                 <div class="container" ng-if="operator.Name && !operatorReady">
-                    <br />
+                    <h4>Loading operator's data:</h4>
                     <md-progress-linear mode="indeterminate"></md-progress-linear>
-                    <div class="bottom-block" layout="column">
-                        <h4>Loading operator's data:</h4>
-                        <span ng-if="!allLines">Lines...</span>
-                        <span ng-if="!allStations">Stations...</span>
-                        <span ng-if="!allRoutes">Routes...</span>
-                        <span ng-if="!stoptimesByTrip">Stop times...</span>
-                        <span ng-if="!tripsByRoute">Trips...</span>
 
+                    <div layout="row" >
+                        <span flex layout-padding ng-style="{'background': allStations ? '#d4ffb1':'#fff3b1' }">Stations</span>
+                        <span flex layout-padding ng-style="{'background': allRoutes ? '#d4ffb1':'#fff3b1' }">Routes</span>
+                        <span flex layout-padding ng-style="{'background': stoptimesByTrip ? '#d4ffb1':'#fff3b1' }">Stop times</span>
+                        <span flex layout-padding ng-style="{'background': tripsByRoute ? '#d4ffb1':'#fff3b1' }">Trips</span>
                     </div>
+
                 </div>
 
                 <div ng-if="operator && operatorReady">
