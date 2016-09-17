@@ -91,6 +91,7 @@
 				requestUrl.pathname.startsWith('/views/') ||
 				requestUrl.pathname.startsWith('/styles/') ||
 				requestUrl.pathname.startsWith('/scripts/') ||
+				requestUrl.pathname.startsWith('/images/') ||
 				requestUrl.pathname.startsWith('/bower_components/')
 			)
 			{
