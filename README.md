@@ -38,3 +38,9 @@ Not all carriers provide accurate data about all the vehicles.
 Stop ids may differ also.
 
 Therefore there is no guarantee that 511.org will return any realtime data for any particular trip.
+
+## Credits
+
+GTFS data By [511 SF Bay](http://511.org)
+
+Map image By [CountZ. - Own work, CC BY-SA 3.0](https://commons.wikimedia.org/w/index.php?curid=7934658)
