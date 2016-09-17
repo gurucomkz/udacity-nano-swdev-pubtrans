@@ -1,22 +1,36 @@
 <!doctype html>
 <html ng-app="pubTransApp">
-  <head>
-    <meta charset="utf-8">
-    <title>PubTrans</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width">
-    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
-    <!-- build:css(.) styles/vendor.css -->
-    <!-- bower:css -->
-    <link rel="stylesheet" href="bower_components/angular-material/angular-material.css" />
-    <!-- endbower -->
-    <!-- endbuild -->
-    <!-- build:css(.tmp) styles/main.css -->
-    <link rel="stylesheet" href="styles/main.css">
-    <!-- endbuild -->
-  </head>
-  <body layout="column" ng-cloak>
+    <head>
+        <meta charset="utf-8">
+        <title>PubTrans</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+        <!-- build:css(.) styles/vendor.css -->
+        <!-- bower:css -->
+        <link rel="stylesheet" href="bower_components/angular-material/angular-material.css" />
+        <!-- endbower -->
+        <!-- endbuild -->
+        <!-- build:css(.tmp) styles/main.css -->
+        <link rel="stylesheet" href="styles/main.css">
+        <!-- endbuild -->
+    </head>
+    <body layout="column" ng-cloak>
 
+        <div id="loadingbar" ng-show="operator && !operatorReady || !allOperators" layout="column" ng-controller="SplashCtrl">
+            <div flex id="mapimage"></div>
+            <div class="container" ng-if="operator">
+                <md-progress-linear mode="indeterminate"></md-progress-linear>
+
+                <div layout="row" class="loader-items" >
+                    <span flex layout-padding ng-class="{ 'loaded': allStations }">Stations</span>
+                    <span flex layout-padding ng-class="{ 'loaded': allRoutes }">Routes</span>
+                    <span flex layout-padding ng-class="{ 'loaded': stoptimesByTrip }">Timing</span>
+                    <span flex layout-padding ng-class="{ 'loaded': tripsByRoute }">Trips</span>
+                </div>
+
+            </div>
+        </div>
 
     <md-toolbar class="md-whiteframe-glow-z1 site-content-toolbar">
         <div class="md-toolbar-tools">
@@ -58,14 +72,15 @@
     <!-- endbower -->
     <!-- endbuild -->
 
-        <!-- build:js({.tmp,app}) scripts/scripts.js -->
-        <script src="scripts/app.js"></script>
-        <script src="scripts/controllers/main.js"></script>
-        <script src="scripts/controllers/about.js"></script>
-        <script src="scripts/services/serviceworker.js"></script>
-        <script src="scripts/services/appsettings.js"></script>
-        <script src="scripts/services/gtfsutils.js"></script>
-        <script src="scripts/services/gtfsdb.js"></script>
-        <!-- endbuild -->
+    <!-- build:js({.tmp,app}) scripts/scripts.js -->
+    <script src="scripts/app.js"></script>
+    <script src="scripts/controllers/main.js"></script>
+    <script src="scripts/controllers/about.js"></script>
+    <script src="scripts/controllers/splash.js"></script>
+    <script src="scripts/services/serviceworker.js"></script>
+    <script src="scripts/services/appsettings.js"></script>
+    <script src="scripts/services/gtfsutils.js"></script>
+    <script src="scripts/services/gtfsdb.js"></script>
+    <!-- endbuild -->
 </body>
 </html>

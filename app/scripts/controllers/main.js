@@ -13,9 +13,9 @@ angular.module('pubTransApp')
     '$timeout',
     '$mdToast',
     '$interval',
-function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
+    '$rootScope',
+function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval, $rootScope) {
     'use strict';
-
 
     $scope.operatorReady = false;
     $scope.operator = AppSettings.val('lastOperator');
@@ -23,6 +23,9 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     $scope.allStations = null;
     $scope.allStationsWKeys = null;
     $scope.allOperators = null;
+    $scope.allRoutes = null;
+    $scope.tripsByRoute = null;
+
     $scope.travelLine = AppSettings.val('lastLine');
     $scope.travelStart = AppSettings.val('lastStart');
     $scope.travelEnd = AppSettings.val('lastStop');
@@ -313,32 +316,31 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
             $scope.allStationsWKeys = stopData;
             $scope.allStations = Object.keys(stopData).map(function(key){return stopData[key];});
 
-
-            console.log('calling fetchOperatorRoutes');
+            //console.log('calling fetchOperatorRoutes');
             return GtfsUtils.fetchOperatorRoutes($scope.operator.Id);
         })
         .then(function(routesData){
-            console.log('allRoutes from fetchOperatorRoutes', routesData);
+            //console.log('allRoutes from fetchOperatorRoutes', routesData);
             $scope.allRoutes = routesData;
-            console.log('calling fetchStopTimes');
+            //console.log('calling fetchStopTimes');
             return GtfsUtils.fetchStopTimes($scope.operator.Id);
         })
         .then(function(stoptimesData) {
-            console.log('stoptimesByTrip from fetchStopTimes', stoptimesData);
+            //console.log('stoptimesByTrip from fetchStopTimes', stoptimesData);
             $scope.stoptimesByTrip = stoptimesData;
 
-            console.log('calling fetchOperatorTrips');
+            //console.log('calling fetchOperatorTrips');
             return GtfsUtils.fetchOperatorTrips($scope.operator.Id);
         })
         .then(function(tripData) {
-            console.log('allTrips from fetchOperatorTrips', tripData);
+            //console.log('allTrips from fetchOperatorTrips', tripData);
             $scope.allTrips = tripData;
 
-            console.log('calling groupTripsByRoute');
+            //console.log('calling groupTripsByRoute');
             return GtfsUtils.groupTripsByRoute(tripData);
         })
         .then(function(groupedTripData) {
-            console.log('tripsByRoute from groupTripsByRoute', groupedTripData);
+            //console.log('tripsByRoute from groupTripsByRoute', groupedTripData);
             $scope.tripsByRoute = groupedTripData;
             return Promise.resolve();
         })
@@ -363,4 +365,21 @@ function ($scope, AppSettings, GtfsUtils, $timeout, $mdToast, $interval) {
     $scope.$watch('travelEnd', function(newVal){
         AppSettings.val('lastStop', newVal);
     });
+
+    //splash
+    var broadcastVar = function(varName){
+        $scope.$watch(varName, function(value) {
+            console.log('Sending broadcast for', varName, value);
+            $rootScope.$broadcast(varName, { value: value });
+        });
+    };
+
+    broadcastVar('operator');
+    broadcastVar('allOperators');
+    broadcastVar('operatorReady');
+    broadcastVar('allStations');
+    broadcastVar('allRoutes');
+    broadcastVar('stoptimesByTrip');
+    broadcastVar('tripsByRoute');
+
 }]);

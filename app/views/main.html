@@ -43,19 +43,6 @@
                 </md-autocomplete>
 
 
-                <div class="container" ng-if="operator.Name && !operatorReady">
-                    <h4>Loading operator's data:</h4>
-                    <md-progress-linear mode="indeterminate"></md-progress-linear>
-
-                    <div layout="row" >
-                        <span flex layout-padding ng-style="{'background': allStations ? '#d4ffb1':'#fff3b1' }">Stations</span>
-                        <span flex layout-padding ng-style="{'background': allRoutes ? '#d4ffb1':'#fff3b1' }">Routes</span>
-                        <span flex layout-padding ng-style="{'background': stoptimesByTrip ? '#d4ffb1':'#fff3b1' }">Stop times</span>
-                        <span flex layout-padding ng-style="{'background': tripsByRoute ? '#d4ffb1':'#fff3b1' }">Trips</span>
-                    </div>
-
-                </div>
-
                 <div ng-if="operator && operatorReady">
                     <br />
                     <label>Origin</label>

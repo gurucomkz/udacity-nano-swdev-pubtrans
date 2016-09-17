@@ -22,6 +22,24 @@ body {
     font-size: 15px;
 }
 
+#loadingbar{
+    position: fixed;
+    left:0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    background: white;
+    z-index: 200;
+}
+
+.loader-items > span{ background: #fff3b1; }
+.loader-items > span.loaded { background: #d4ffb1; }
+
+#mapimage{
+    background: center center url(../images/VTA-light-rail.png) no-repeat;
+    background-size: auto 100%;
+}
+
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
 
